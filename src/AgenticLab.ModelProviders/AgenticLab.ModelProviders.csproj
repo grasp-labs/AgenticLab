@@ -6,6 +6,10 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="AWSSDK.BedrockRuntime" Version="4.0.101.13" />
+    <PackageReference Include="AWSSDK.Extensions.Bedrock.MEAI" Version="4.0.101.8" />
+    <PackageReference Include="AWSSDK.SSO" Version="4.0.100.22" />
+    <PackageReference Include="AWSSDK.SSOOIDC" Version="4.0.100.21" />
     <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.0" />
     <InternalsVisibleTo Include="AgenticLab.AiService.Tests" />

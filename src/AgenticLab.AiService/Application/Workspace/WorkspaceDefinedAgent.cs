@@ -37,6 +37,9 @@ internal sealed class WorkspaceDefinedAgent(WorkspaceAgentDefinition definition,
     public override IReadOnlyList<string> Guardrails => definition.Guardrails;
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts => definition.SuggestedPrompts ?? Array.Empty<string>();
+
+    /// <inheritdoc />
     protected override string Persona => definition.Persona;
 
     /// <inheritdoc />

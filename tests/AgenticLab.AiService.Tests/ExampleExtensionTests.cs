@@ -6,15 +6,10 @@ using AgenticLab.AiService.Application.Flow;
 using AgenticLab.AiService.Application.Agents;
 using AgenticLab.AiService.Demo.Tools;
 using AgenticLab.AiService.Demo.Agents;
+using AgenticLab.AiService.Demo.Vendors;
 using AgenticLab.AiService.Startup;
-using AgenticLab.Examples.ChatGpt;
-using AgenticLab.Examples.ChatGpt.Agents;
-using AgenticLab.Examples.Claude;
-using AgenticLab.Examples.ClaudeCode;
-using AgenticLab.Examples.Copilot;
 using AgenticLab.Examples.Copilot365;
-using AgenticLab.Examples.Gemini;
-using AgenticLab.Examples.Windfarm;
+using AgenticLab.Examples.Copilot365.Agents;
 using Microsoft.Extensions.AI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,13 +25,7 @@ public sealed class ExampleExtensionTests
 {
     [Theory]
     [InlineData(null, "default")]
-    [InlineData("chatgpt", "chatgpt")]
-    [InlineData("claude", "claude")]
-    [InlineData("claude-code", "claude-code")]
-    [InlineData("copilot", "copilot")]
-    [InlineData("gemini", "gemini")]
     [InlineData("copilot365", "microsoft365")]
-    [InlineData("windfarm", "windfarm")]
     public void HostExamplesRegisterOnlyTheEnabledHost(string? enabledId, string expectedKey)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(enabledId is null
@@ -51,7 +40,6 @@ public sealed class ExampleExtensionTests
         var agentTypes = services.Where(service => service.ServiceType == typeof(IAgentDefinition))
             .Select(service => service.ImplementationType).ToArray();
         Assert.Equal(agentTypes.Length, agentTypes.Distinct().Count());
-        Assert.Equal(enabledId == "chatgpt", agentTypes.Contains(typeof(ChatGptAgent)));
         Assert.Contains(typeof(ChatAgent), agentTypes);
         Assert.Contains(typeof(AskAgent), agentTypes);
         Assert.Contains(typeof(PlanAgent), agentTypes);
@@ -62,13 +50,13 @@ public sealed class ExampleExtensionTests
     [Fact]
     public void AllHostExamplesCoexistWithoutOwningSharedAgents()
     {
-        var ids = new[] { "chatgpt", "claude", "claude-code", "copilot", "gemini", "copilot365", "windfarm" };
+        var ids = new[] { "copilot365" };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(
             ids.ToDictionary(id => $"Examples:{id}:Enabled", _ => (string?)"true")).Build();
         var services = HostServices(configuration);
         using var provider = services.BuildServiceProvider();
         var hosts = provider.GetRequiredService<VendorHarnessCatalog>().Vendors;
-        Assert.Equal(new[] { "default", "chatgpt", "claude", "claude-code", "copilot", "gemini", "microsoft365", "windfarm" },
+        Assert.Equal(new[] { "default", "microsoft365" },
             hosts.Select(host => host.Key));
         var types = services.Where(service => service.ServiceType == typeof(IAgentDefinition))
             .Select(service => service.ImplementationType).ToArray();
@@ -77,20 +65,24 @@ public sealed class ExampleExtensionTests
         Assert.Equal(ids.Length, examples.Modules.Count);
         foreach (var name in new[] { SharedAgentNames.Chat, SharedAgentNames.Ask, SharedAgentNames.Plan, SharedAgentNames.Coder })
             Assert.Null(examples.ForAgent(name));
-        Assert.Equal("chatgpt", examples.ForAgent(ChatGptAgent.AgentName)?.Id);
+        Assert.Equal("copilot365", examples.ForAgent(Microsoft365Agent.AgentName)?.Id);
         Assert.All(hosts.Where(host => host.Key != "default"), host => Assert.NotNull(
             provider.GetRequiredService<VendorHarnessCatalog>().Resolve(host.Key)));
     }
 
+    [Fact]
+    public void DefaultHostOffersWorkspaceModes()
+    {
+        var modes = new DefaultHarness().Modes.Select(mode => mode.Agent).ToArray();
+        Assert.Equal(ChatAgent.AgentName, modes[0]);
+        Assert.Contains(SharedAgentNames.Ask, modes);
+        Assert.Contains(SharedAgentNames.Plan, modes);
+        Assert.Contains(SharedAgentNames.Coder, modes);
+    }
+
     private static IServiceCollection HostServices(IConfiguration configuration) => new ServiceCollection()
         .AddVendorHarnesses().AddDemoAgents()
-        .AddExample<ChatGptExample>(configuration, ExampleHost.AiService)
-        .AddExample<ClaudeExample>(configuration, ExampleHost.AiService)
-        .AddExample<ClaudeCodeExample>(configuration, ExampleHost.AiService)
-        .AddExample<CopilotExample>(configuration, ExampleHost.AiService)
-        .AddExample<GeminiExample>(configuration, ExampleHost.AiService)
-        .AddExample<Copilot365Example>(configuration, ExampleHost.AiService)
-        .AddExample<WindfarmExample>(configuration, ExampleHost.AiService);
+        .AddExample<Copilot365Example>(configuration, ExampleHost.AiService);
 
     [Fact]
     public void HostToolsKeepExactSelectionOrderAndOriginalSchemas()

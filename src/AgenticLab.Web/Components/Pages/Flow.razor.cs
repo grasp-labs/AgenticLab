@@ -85,7 +85,7 @@ public partial class Flow : IDisposable
         _view.Layout.BottomPanelMaximized ? "Restore the Execution panel" : "Expand the Execution panel";
 
     private string HostSummary => _view.Roster.CurrentVendorInfo is { } info
-        ? $"{info.DisplayName}: {info.ModelLabel}; {info.Modes.Count} mode{(info.Modes.Count == 1 ? "" : "s")}" : _view.Roster.VendorName;
+        ? $"{info.DisplayName}: {_view.Harness.HostModelLabel(info)}; {info.Modes.Count} mode{(info.Modes.Count == 1 ? "" : "s")}" : _view.Roster.VendorName;
 
     protected override void OnInitialized()
     {

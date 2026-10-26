@@ -98,8 +98,10 @@ tools: [read/readFile, search/fileSearch, search/listDirectory, web/fetch]
 Read the workspace and fetch relevant reference pages. Do not change files.
 ```
 
-Optional fields are `risk` (`None`, `Low`, `Medium`, `High`), `guardrails` and `model` (an Azure
-deployment; see [precedence](agents.md#per-agent-models)). Omitted risk defaults to High for
+Optional fields are `risk` (`None`, `Low`, `Medium`, `High`), `guardrails`, `model` (an Azure
+deployment; see [precedence](agents.md#per-agent-models)) and `prompts` (a list of example messages,
+trimmed and de-duplicated, returned as `suggestedPrompts` for the composer; they are never sent to the
+model). Omitted risk defaults to High for
 write/delete/terminal tools, otherwise Low; guardrails are derived from tools. These are metadata,
 not extra enforcement. The parsed `skills` field does not disable skills: every workspace agent
 requires a workspace, supports skills and receives `ReadSkill` even when omitted from its tool list.
@@ -109,8 +111,8 @@ Markdown files with empty bodies are skipped. Both chat paths try the built-in c
 then resolve workspace agents by name, case-insensitively.
 
 `POST /agents/workspace` accepts `{ Workspace }` and returns agent metadata, including `ToolMappings`.
-Web appends these agents to hosts that already offer a workspace mode, such as GitHub Copilot and
-Claude Code. Discovery is per workspace, not a startup registration.
+Web appends these agents to hosts that already offer a workspace mode, such as Default
+(Ask, Plan and Coder). Discovery is per workspace, not a startup registration.
 
 ### Tool name mapping
 

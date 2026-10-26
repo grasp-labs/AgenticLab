@@ -53,7 +53,8 @@ internal static class WorkspaceAgentFileParser
             yaml.Skills,
             string.IsNullOrWhiteSpace(yaml.Model) ? null : yaml.Model.Trim(),
             relativePath,
-            mappings);
+            mappings,
+            Prompts(yaml.Prompts));
     }
 
     /// <summary>Parses one markdown custom-agent file (frontmatter + body-as-persona).</summary>
@@ -126,8 +127,16 @@ internal static class WorkspaceAgentFileParser
             yaml?.Skills ?? false,
             string.IsNullOrWhiteSpace(yaml?.Model) ? null : yaml.Model!.Trim(),
             relativePath,
-            mappings);
+            mappings,
+            Prompts(yaml?.Prompts));
     }
+
+    private static IReadOnlyList<string> Prompts(List<string>? declared) =>
+        (declared ?? [])
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => p.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
 
     // Uses the declared risk when valid; otherwise infers it from whether the agent can change the workspace.
     private static AgentRiskLevel ParseRisk(string? declared, IReadOnlyList<string> tools)
@@ -186,5 +195,6 @@ internal static class WorkspaceAgentFileParser
         public bool Skills { get; set; }
         public string? Model { get; set; }
         public List<string>? Guardrails { get; set; }
+        public List<string>? Prompts { get; set; }
     }
 }

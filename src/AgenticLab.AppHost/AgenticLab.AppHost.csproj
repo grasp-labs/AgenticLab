@@ -10,8 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.5.4" />
-    <ProjectReference Include="..\AgenticLab.Bff\AgenticLab.Bff.csproj" />
     <ProjectReference Include="..\AgenticLab.AiService\AgenticLab.AiService.csproj" />
     <ProjectReference Include="..\AgenticLab.A2AServer\AgenticLab.A2AServer.csproj" />
     <ProjectReference Include="..\AgenticLab.McpServer\AgenticLab.McpServer.csproj" />

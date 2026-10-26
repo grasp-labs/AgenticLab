@@ -35,6 +35,12 @@ public sealed class M365ResearcherAgent(Microsoft365Tool m365, IHostToolSource h
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "Research the SSO blocker: what do our emails and chats say, and what does Wikipedia say about SAML?",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are Researcher, a Microsoft 365 Copilot agent for in-depth research. " +
         "You tackle open-ended questions by gathering evidence from multiple sources before answering: " +

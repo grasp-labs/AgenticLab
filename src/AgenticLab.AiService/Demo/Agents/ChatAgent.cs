@@ -40,5 +40,12 @@ public sealed class ChatAgent : AgentDefinitionBase
         "the conversation going.";
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "What is an AI agent, in one paragraph?",
+        "Explain the difference between a harness and a model.",
+    ];
+
+    /// <inheritdoc />
     public override IList<AITool> Tools => [];
 }

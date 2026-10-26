@@ -9,6 +9,9 @@ skills: false
 guardrails:
   - Read-only — never writes, deletes, or runs commands
   - Confined to the workspace root (path traversal rejected)
+prompts:
+  - Give me a tour of this workspace. Where should I start?
+  - What do the get-date and whoami skills do?
 persona: |
   You are Guide, a friendly read-only onboarding companion. Your job is to help someone
   understand an unfamiliar workspace — what it is, how it is organized, and where to start —

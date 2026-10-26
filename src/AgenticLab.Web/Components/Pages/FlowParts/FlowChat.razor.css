@@ -26,9 +26,40 @@
 
 .chat-empty {
     margin: auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--lab-space-4);
     text-align: center;
     font-size: .9rem;
     color: var(--text-dim);
+}
+
+.chat-empty p {
+    margin: 0;
+}
+
+/* The selected agent's suggested messages: clicking one pre-fills the composer, never sends. */
+.chat-suggestions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--lab-space-2);
+    width: min(100%, 36rem);
+}
+
+.chat-suggestions-label {
+    font: var(--lab-text-xs) var(--lab-font-mono);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-dim);
+}
+
+.chat-suggestions ::deep .lab-button {
+    justify-content: flex-start;
+    text-align: left;
+    white-space: normal;
+    font-weight: 400;
 }
 
 /* One exchange: the user's message then the agent's. */

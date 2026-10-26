@@ -32,6 +32,13 @@ services:
       - OpenAI__Model=${OpenAI__Model:-}
       - Gemini__ApiKey=${Gemini__ApiKey:-}
       - Gemini__Model=${Gemini__Model:-}
+      - Bedrock__Model=${Bedrock__Model:-}
+      - Bedrock__Region=${Bedrock__Region:-}
+      - Bedrock__ApiKey=${Bedrock__ApiKey:-}
+      # Pass-through: unset in the shell means unset in the container, never an empty credential.
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
     networks:
       - agenticlab
 
@@ -45,6 +52,8 @@ services:
       - "127.0.0.1:8083:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      # This fork is built around Copilot 365; set Examples__copilot365__Enabled=false in .env to hide it.
+      - Examples__copilot365__Enabled=${Examples__copilot365__Enabled:-true}
       - ASPNETCORE_HTTP_PORTS=8080
       - Models__Provider=${Models__Provider:-AzureOpenAI}
       - AzureOpenAI__Endpoint=${AzureOpenAI__Endpoint:-}
@@ -54,6 +63,13 @@ services:
       - OpenAI__Model=${OpenAI__Model:-}
       - Gemini__ApiKey=${Gemini__ApiKey:-}
       - Gemini__Model=${Gemini__Model:-}
+      - Bedrock__Model=${Bedrock__Model:-}
+      - Bedrock__Region=${Bedrock__Region:-}
+      - Bedrock__ApiKey=${Bedrock__ApiKey:-}
+      # Pass-through: unset in the shell means unset in the container, never an empty credential.
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
       - services__mcpserver__http__0=http://mcpserver:8080
       - services__a2aserver__http__0=http://a2aserver:8080
     networks:
@@ -72,8 +88,14 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      # This fork is built around Copilot 365; set Examples__copilot365__Enabled=false in .env to hide it.
+      - Examples__copilot365__Enabled=${Examples__copilot365__Enabled:-true}
       - ASPNETCORE_HTTP_PORTS=8080
       - services__aiservice__http__0=http://aiservice:8080
+      # Optional Entra ID sign-in; register http://localhost:8080/signin-oidc and /signout-callback-oidc as redirect URIs.
+      - AzureAd__TenantId
+      - AzureAd__ClientId
+      - AzureAd__ClientSecret
     networks:
       - agenticlab
     depends_on:

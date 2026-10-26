@@ -30,6 +30,13 @@ public sealed class TriviaMasterAgent(WikiTool wiki, CalculatorTool calculator) 
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "How many years passed between the first Moon landing and the launch of the Hubble telescope?",
+        "Which is taller, the Burj Khalifa or two Eiffel Towers stacked?",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are TriviaMaster, a playful and knowledgeable trivia host. " +
         "Use the SearchWiki and GetWikiPage tools to ground trivia answers in real facts, and use the " +

@@ -34,10 +34,33 @@ internal sealed class HarnessView(FlowViewState owner, Action notify)
                 return $"{simulated} (simulated)";
             }
 
-            var deployment = owner.Agent.Info?.ModelId;
-            return string.IsNullOrWhiteSpace(deployment) ? "Azure OpenAI" : $"Azure OpenAI · {deployment}";
+            return ConfiguredModelLabel;
         }
     }
+
+    /// <summary>
+    /// The configured provider and the selected agent's declared model, as reported by the service. With
+    /// <c>Models:ForceDefaultModel</c> the provider's default model executes instead; see docs/agents.md.
+    /// </summary>
+    public string ConfiguredModelLabel
+    {
+        get
+        {
+            var deployment = owner.Agent.Info?.ModelId;
+            return string.IsNullOrWhiteSpace(deployment) ? ProviderLabel : $"{ProviderLabel} · {deployment}";
+        }
+    }
+
+    private string ProviderLabel => owner.Agent.Info?.Provider is { Length: > 0 } name ? name : "Model";
+
+    /// <summary>
+    /// A host's own illustrative label; otherwise the selected agent's declared model for the current host, and
+    /// only the provider for other hosts, whose agents may run on different models.
+    /// </summary>
+    public string HostModelLabel(VendorInfo host) =>
+        !string.IsNullOrWhiteSpace(host.ModelLabel) ? host.ModelLabel
+        : string.Equals(host.Key, owner.VendorKey, StringComparison.OrdinalIgnoreCase) ? ConfiguredModelLabel
+        : ProviderLabel;
 
     // --- System prompt ------------------------------------------------------
 

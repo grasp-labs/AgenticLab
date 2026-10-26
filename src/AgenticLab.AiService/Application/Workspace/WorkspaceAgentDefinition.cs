@@ -25,6 +25,7 @@ public sealed record ToolMapping(string Declared, string? Mapped);
 /// <param name="ModelId">The Azure OpenAI deployment the agent should run on (from the YAML <c>model</c>), or <c>null</c> for the default.</param>
 /// <param name="RelativePath">The workspace-relative path of the YAML file the agent was loaded from.</param>
 /// <param name="ToolMappings">Each declared tool token and the backend tool it mapped to, so the UI can show the mapping.</param>
+/// <param name="SuggestedPrompts">Example messages (from the YAML <c>prompts</c>) a client may offer to pre-fill its composer.</param>
 public sealed record WorkspaceAgentDefinition(
     string Name,
     string Description,
@@ -35,4 +36,5 @@ public sealed record WorkspaceAgentDefinition(
     bool SupportsSkills,
     string? ModelId,
     string RelativePath,
-    IReadOnlyList<ToolMapping> ToolMappings);
+    IReadOnlyList<ToolMapping> ToolMappings,
+    IReadOnlyList<string>? SuggestedPrompts = null);

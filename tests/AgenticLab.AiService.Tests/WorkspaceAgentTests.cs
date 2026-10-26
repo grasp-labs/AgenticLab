@@ -87,6 +87,27 @@ public sealed class WorkspaceAgentTests : IDisposable
     }
 
     [Fact]
+    public void YamlAgent_CollectsDistinctTrimmedPrompts()
+    {
+        var file = Write("agents/prompts.agent.yaml", """
+            name: Prompter
+            tools: [ReadFile]
+            prompts:
+              - "  Summarize the README.  "
+              - ""
+              - Summarize the README.
+              - List the tests.
+            persona: Suggest things.
+            """);
+
+        var agent = WorkspaceAgentFileParser.TryParseYaml(file, "agents/prompts.agent.yaml")!;
+
+        Assert.Equal(["Summarize the README.", "List the tests."], agent.SuggestedPrompts);
+        Assert.Empty(WorkspaceAgentFileParser.TryParseYaml(
+            Write("agents/plain.agent.yaml", "name: Plain\ntools: [ReadFile]\npersona: Plain.\n"), "agents/plain.agent.yaml")!.SuggestedPrompts!);
+    }
+
+    [Fact]
     public void MarkdownAgent_MapsVsCodeTokensAndUsesTheBodyAsPersona()
     {
         var file = Write(".github/agents/mcp-agent.md", """

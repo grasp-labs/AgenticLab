@@ -3,7 +3,20 @@
     <div class="chat-log" @ref="_logRef">
         @if (Run.Turns.Count == 0 && string.IsNullOrWhiteSpace(Run.RunMessage))
         {
-            <p class="chat-empty">No messages yet.</p>
+            <div class="chat-empty">
+                <p>No messages yet.</p>
+                @if (View.Agent.SuggestedPrompts.Count > 0 && string.IsNullOrWhiteSpace(View.Message))
+                {
+                    <div class="chat-suggestions" role="group" aria-label="Suggested messages">
+                        <span class="chat-suggestions-label">Try asking</span>
+                        @foreach (var prompt in View.Agent.SuggestedPrompts)
+                        {
+                            <LabButton Label="@prompt" Variant="secondary" Disabled="@Run.Running"
+                                       OnClick="@(() => View.Message = prompt)" />
+                        }
+                    </div>
+                }
+            </div>
         }
         else
         {

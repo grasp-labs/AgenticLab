@@ -10,17 +10,12 @@
   <ItemGroup>
     <ProjectReference Include="..\AgenticLab.ServiceDefaults\AgenticLab.ServiceDefaults.csproj" />
     <ProjectReference Include="..\AgenticLab.Extensibility\AgenticLab.Extensibility.csproj" />
-    <ProjectReference Include="..\AgenticLab.Examples.ChatGpt\AgenticLab.Examples.ChatGpt.csproj" />
-    <ProjectReference Include="..\AgenticLab.Examples.Claude\AgenticLab.Examples.Claude.csproj" />
-    <ProjectReference Include="..\AgenticLab.Examples.ClaudeCode\AgenticLab.Examples.ClaudeCode.csproj" />
-    <ProjectReference Include="..\AgenticLab.Examples.Copilot\AgenticLab.Examples.Copilot.csproj" />
-    <ProjectReference Include="..\AgenticLab.Examples.Gemini\AgenticLab.Examples.Gemini.csproj" />
     <ProjectReference Include="..\AgenticLab.Examples.Copilot365\AgenticLab.Examples.Copilot365.csproj" />
-    <ProjectReference Include="..\AgenticLab.Examples.Windfarm\AgenticLab.Examples.Windfarm.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="1.3.2" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="4.16.1" />
     <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="2.0.0" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="2.0.0" />

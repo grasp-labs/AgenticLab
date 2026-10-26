@@ -1,7 +1,7 @@
 # Blazor design system
 
-Agentic Lab's Blazor design system shares React's visual language, not its runtime. Shared controls
-have no dependency on Flow state, AiService, React or npm.
+Agentic Lab's Blazor design system needs no JavaScript framework runtime. Shared controls
+have no dependency on Flow state, AiService or npm.
 
 ## Ownership
 

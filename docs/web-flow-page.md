@@ -12,7 +12,7 @@ read the [security policy](../SECURITY.md).
 
 Choose **Host** and **Agent** above the workspace, then send a message from **Conversation**.
 The host selects a representative prompt and available modes; the backend remains the startup-selected
-[Azure OpenAI, OpenAI or Gemini provider](agents.md#model-providers). Host selection never changes keys.
+[Azure OpenAI, OpenAI, Gemini or Bedrock provider](agents.md#model-providers). Host selection never changes keys.
 Default is always available. Other hosts require enabled [example modules](examples.md#default-startup).
 Unavailable saved hosts fall back to Default. Selectors are locked during a run.
 
@@ -27,6 +27,10 @@ see the [workspace guide](workspace.md). Switching tabs preserves the chat log a
 **New conversation** is in the panel header and is disabled during a run. A waiting
 [agent question](agents.md#asking-the-user-a-question-human-in-the-loop) gets its own answer input
 near the composer. Replies are displayed as escaped text.
+
+An empty conversation lists the selected agent's `suggestedPrompts` from `GET /agents` under **Try
+asking** while the composer is empty. Clicking one replaces the draft and hides the list; nothing is
+sent until the user presses Send. Agents without suggestions show only "No messages yet."
 
 **Settings → Display → Show token usage summaries** is off by default and saved per browser/origin.
 It shows or hides the conversation footers and Prompt signature's actual/cache rows together,
@@ -77,6 +81,8 @@ The diagram separates **Agent host** from **Model**: the host manages execution;
 an answer or a tool request. **Agent** encloses both, while User is outside. Separate arrows show
 requests and responses, and the loop counter counts model round-trips. Technical labels add
 implementation details; branded model labels marked **simulated** are not vendor integrations.
+Otherwise the Model box and host tooltips show the provider and model reported by AiService (for
+example `Amazon Bedrock · <model-id>`), never a guessed provider name.
 See [model configuration](agents.md#per-agent-models) for declared versus execution deployments.
 
 **Basic / Technical** apply complete display presets. **Custom** means the current options match
@@ -113,7 +119,7 @@ Compact hosts show plain labels; collapsing the anatomy leaves an open Details s
 [![Expanded agent host anatomy with the configured system prompt open in the Details dock.](images/04-host-inspector.png)](images/04-host-inspector.png)
 
 Captured locally on 2026-09-22; this image retains the former **Agentic AI** branding. The product
-is **Agentic Lab**. Gray masks cover deployment identifiers. The ChatGPT-labelled host is an Azure
+is **Agentic Lab**. Gray masks cover deployment identifiers. The ChatGPT-labelled host (from an example removed in this fork) is an Azure
 OpenAI-backed demo, not the ChatGPT product. Select the image for full size.
 
 Details shows the selected section, not the whole request:

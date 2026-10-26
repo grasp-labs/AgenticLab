@@ -12,3 +12,4 @@ h1 { margin: 0; font: 600 var(--lab-text-title)/1.2 var(--lab-font-sans); letter
 .header-actions ::deep input[type="checkbox"] { accent-color: var(--lab-accent); }
 @media (max-width: 900px) { .app-header { padding: 18px 22px; min-height: 80px; } .edition { display: none; } }
 @media (max-width: 500px) { .app-header { padding: 16px 20px; gap: 12px; } .header-actions { gap: 14px; width: 100%; justify-content: flex-start; } }
+.header-user { color: var(--lab-muted); font: var(--lab-text-sm)/1.5 var(--lab-font-sans); max-width: 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

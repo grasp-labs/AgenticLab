@@ -42,6 +42,13 @@ public sealed class CoderAgent(FileSystemTool files, TerminalTool terminal, Skil
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "Create notes/skills.md with a one-line summary of each skill in this workspace.",
+        "Use the get-date skill to tell me today's date, then explain which tool call it required.",
+    ];
+
+    /// <inheritdoc />
     protected override string Harness =>
         "You run inside an automated coding harness with direct, scoped access to the user's workspace " +
         "through a small set of tools (read, list, write and delete files, and run allowlisted shell " +

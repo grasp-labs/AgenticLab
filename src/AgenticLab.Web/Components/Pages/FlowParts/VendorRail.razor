@@ -11,7 +11,7 @@
             </button>
             <div class="rail-tooltip" role="tooltip">
                 <span class="rt-name">@host.DisplayName</span>
-                <span class="rt-model">@host.ModelLabel</span>
+                <span class="rt-model">@View.Harness.HostModelLabel(host)</span>
                 <span class="rt-modes">@host.Modes.Count mode@(host.Modes.Count == 1 ? "" : "s")</span>
                 @if (presentation?.ProductConceptId is { } conceptId)
                 {

@@ -7,16 +7,15 @@ or module sandbox. See the [catalogue](#catalogue) for complete examples.
 
 ## Default startup
 
-Base configuration enables only **Default**. AppHost Development additionally enables **ChatGPT**,
-**GitHub Copilot** and **Copilot 365**. Other environments and standalone services need explicit
+Base configuration enables only **Default**. AppHost Development additionally enables
+**Copilot 365**. Other environments and standalone services need explicit
 example configuration; `--Examples:<id>:Enabled=false` overrides a Development default.
 
-Enable modules with `Examples:<id>:Enabled=true`. IDs are `chatgpt`, `gemini`, `copilot`,
-`claude-code`, `claude`, `copilot365` and `windfarm`; flags can be combined. Copilot365's API host
-key is `microsoft365`; the others use their module ID.
+Enable modules with `Examples:<id>:Enabled=true`. This fork ships one module, `copilot365`; its API
+host key is `microsoft365`. Modules you add use their module ID as host key.
 
 ```sh
-dotnet run --project src/AgenticLab.AppHost -- --Examples:chatgpt:Enabled=true --Examples:copilot:Enabled=true
+dotnet run --project src/AgenticLab.AppHost -- --Examples:copilot365:Enabled=true
 ```
 
 Vendor prompts/labels are representative demos, not connections to those products. Model configuration
@@ -42,7 +41,7 @@ tools and fixtures stay out of core. Tests may reference hosts for real protocol
 Extensibility owns agent/module/runtime contracts and shared controls, not domain state or an
 approval engine. Harness-only modules declare `AgentNames: []` because that list means ownership.
 They reuse `SharedAgentNames` (`ChatAgent`, `Ask`, `Plan`, `Coder`), registered once in core.
-ChatGPT owns `ChatGpt` and reuses published tools through `IHostToolSource`.
+Copilot365 owns its three agents and reuses published tools through `IHostToolSource`.
 
 ## Add an example
 
@@ -84,7 +83,6 @@ Use normal SDK tool registration, not another schema layer. Registration rejects
 and ownership conflicts; `AddExampleTools` snapshots registrations before contributions mutate DI.
 `GET /examples` exposes public manifests. Agent/vendor responses include optional `exampleId` and
 `requiresExampleUi` (null/false by default). Remote metadata cannot select arbitrary components.
-React excludes unsupported UI-required agents and does not forward module APIs.
 
 ## Runtime capabilities
 
@@ -131,10 +129,4 @@ shared Learn content. See the [design system](design-system.md).
 
 | Example | Purpose | Documentation and tests |
 | --- | --- | --- |
-| ChatGPT | Dedicated conversational agent with bounded Wikipedia and calculator tools | [Project README](../src/AgenticLab.Examples.ChatGpt/README.md), [module tests](../src/AgenticLab.Examples.ChatGpt/Tests) |
-| Gemini | Representative host prompt over the shared tool-free chat agent | [Project README](../src/AgenticLab.Examples.Gemini/README.md), [module tests](../src/AgenticLab.Examples.Gemini/Tests) |
-| GitHub Copilot | Representative host prompt over shared Ask, Plan and Coder modes | [Project README](../src/AgenticLab.Examples.Copilot/README.md), [module tests](../src/AgenticLab.Examples.Copilot/Tests) |
-| Claude Code | Representative host prompt over shared Plan and Coder modes | [Project README](../src/AgenticLab.Examples.ClaudeCode/README.md), [module tests](../src/AgenticLab.Examples.ClaudeCode/Tests) |
-| Claude | Representative host prompt over the shared tool-free chat agent | [Project README](../src/AgenticLab.Examples.Claude/README.md), [module tests](../src/AgenticLab.Examples.Claude/Tests) |
 | Copilot 365 | Workplace chat, research and analysis over synthetic Microsoft 365 data; no custom panel | [Project README](../src/AgenticLab.Examples.Copilot365/README.md), [module tests](../src/AgenticLab.Examples.Copilot365/Tests) |
-| Windfarm | Synthetic alarm investigation, remote specialist review and human-approved planned inspection | [Project README](../src/AgenticLab.Examples.Windfarm/README.md), [module tests](../src/AgenticLab.Examples.Windfarm/Tests) |

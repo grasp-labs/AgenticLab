@@ -31,15 +31,16 @@ network. Before any shared or public deployment, add authentication, per-user au
 process/filesystem isolation, network policy, resource and cost limits, and a reviewed retention
 policy. A reverse proxy alone does not provide all of these controls.
 
-- AiService, the React BFF, and the sample MCP/A2A services do not implement caller authentication
-  or per-user authorization. Conversation and session IDs identify state; they are not access control.
+- Web can require Microsoft Entra ID sign-in for one tenant (`AzureAd__*`, see the README); any
+  account the tenant accepts can sign in unless the Enterprise application requires assignment. It
+  protects the pages, not the services behind them. AiService and the sample MCP/A2A services do not
+  implement caller authentication or per-user authorization. Conversation and session IDs identify state; they are not access control.
 - `POST /chat` and `POST /chat/stream` can invoke the selected agent's tools. `POST /chat/control`
   can affect a live run, including releasing execution or answering a question; `POST /chat/reset`
   removes backend conversation history. None of these endpoints should be exposed unprotected.
 - Workspace, agent, and harness endpoints can reveal local directory information, workspace
   metadata, and configured prompts without sending a chat message. Protect them as well as chat.
-- The BFF's route/header allowlists do not authenticate callers. Keep MCP/A2A services and the
-  Aspire dashboard private too; review remote servers and their tools before connecting them.
+- Keep MCP/A2A services and the Aspire dashboard private too; review remote servers and their tools before connecting them.
 
 ### Workspace and Terminal Tools
 
@@ -61,14 +62,17 @@ manual stepping, or the working directory to constrain a process.
 ## Credentials, Data, and Costs
 
 Keep Azure OpenAI, OpenAI or Gemini credentials in the AppHost's local user-secrets store or
-server-side environment variables as described in [Run Locally](README.md#run-locally). Aspire
-explicitly forwards only the selected provider's settings to AiService and A2AServer, not to Web,
-BFF or MCP. Provider selection is local startup configuration, not a browser credential field.
+server-side environment variables as described in [Run Locally](README.md#run-locally). Bedrock uses
+either a Bedrock API key stored the same way (prefer short-term keys) or AWS credentials from a local
+profile, the standard `AWS_*` environment variables, or an attached role. Grant only Bedrock invoke
+permissions. Aspire
+explicitly forwards only the selected provider's settings to AiService and A2AServer, not to Web
+or MCP. Provider selection is local startup configuration, not a browser credential field.
 Never put credentials in source, frontend assets, images, sample configuration, or reports.
 The user-secrets store is a development convenience, not a production secret-management system.
 
 Live runs send prompts, conversation history, enabled instructions, selected context, and tool
-results to the configured model service and may incur Azure, OpenAI or Google charges. API usage
+results to the configured model service and may incur Azure, OpenAI, Google or AWS charges. API usage
 is separate from consumer chat subscriptions; there is no automatic fallback to another provider.
 Gemini tool-call signatures are opaque continuation metadata retained with conversation history,
 not a credential or readable reasoning trace. Wikipedia, web-fetch, MCP,
@@ -85,8 +89,6 @@ history and frontend captures have separate lifetimes:
   not immediately disappear, and the current exchange is outside the archive budget until the next
   Send. New conversation clears the page's retained conversation/captures; page disposal releases
   them too. See [replay retention](docs/execution-explorer.md#replay-retention).
-- React retains its own bounded transcript and activity state, not the Blazor replay archive.
-  See [React transport and state](docs/react-frontend.md#transport-and-state).
 
 Reset is not secure erasure and does not undo tool side effects or delete data already sent to
 external services, exported logs, screenshots, or other copies. Browser preferences can also retain

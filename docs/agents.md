@@ -16,6 +16,11 @@ are implemented in [AgentEndpoints](../src/AgenticLab.AiService/Endpoints/AgentE
 Returns `agents` and a `default` name (`ChatAgent`). Each entry describes tools, workspace/skills
 support, model, risk and guardrails, plus optional `exampleId`/`requiresExampleUi` metadata.
 Enabled [examples](examples.md) can add agents; discover the roster rather than hardcoding it.
+Each entry may also carry `suggestedPrompts`: short example messages the agent advertises. Blazor's
+empty conversation offers them under **Try asking** as composer pre-fills and never sends them
+automatically or as instructions. Code-defined agents override `SuggestedPrompts` on
+`AgentDefinitionBase` (default empty); workspace agents declare a `prompts:` list (see
+[workspace-defined agents](workspace.md#workspace-defined-agents-the-agents-folder)).
 `POST /agents/workspace` lists workspace-defined agents separately. `GET /examples` returns public
 module manifests, not component types or remote prompts.
 
@@ -86,10 +91,9 @@ Backend retention is independent of [Web replay retention](execution-explorer.md
 
 ## Conversation memory and the layered prompt
 
-**Host changes:** Blazor and React start a fresh conversation and clear captures when Host changes,
+**Host changes:** Blazor starts a fresh conversation and clears captures when Host changes,
 preserving drafts and view preferences. Agent-only changes keep history. This is client behavior;
-the server does not reset based on `vendor`. React commits the host change after successful reset;
-Blazor uses a fresh local ID immediately and reports cleanup failures.
+the server does not reset based on `vendor`. Blazor uses a fresh local ID immediately and reports cleanup failures.
 
 **Prompt layers:** the agent host's shared guidance (`<harnessMode>`) precedes its persona
 (`<agentMode>`). Harness is the technical name for the host's agent-running machinery. Selecting
@@ -101,7 +105,9 @@ vendor prompts or integrations with those products.
 leave it unchanged. Other hosts require [enabled examples](examples.md#default-startup);
 Copilot365 uses module ID `copilot365` but API host key `microsoft365`.
 
-- `GET /vendors` lists registered host names, modes, simulated model labels and optional example metadata.
+- `GET /vendors` lists registered host names, modes, optional simulated model labels and example metadata.
+  `GET /agents` entries carry `modelId` and `provider` (for example `Amazon Bedrock`); Web shows those
+  when a host sets no label of its own, as Default and Copilot 365 do.
 - `POST /harness` accepts `{ Agent, Vendor }` and returns `{ Prompt }` for the host guidance preview.
 - Captured `llm-request` data shows the actual composed instructions sent for a run.
 
@@ -119,7 +125,6 @@ and ownership, see [example modules](examples.md).
 | `MathTutor` | Patient tutor that solves and explains arithmetic. | `Calculate` |
 | `TriviaMaster` | Playful trivia host that researches facts and crunches numbers. | `SearchWiki`, `GetWikiPage`, `Calculate` |
 | `ChatAgent` (default) | Friendly conversational companion that chats from its own knowledge. | _(none)_ |
-| `ChatGpt` (opt-in `chatgpt` example) | Conversational assistant used by the ChatGPT demo's chat mode, with Wikipedia grounding and arithmetic. | `SearchWiki`, `GetWikiPage`, `Calculate` |
 | `Ask` | Read-only assistant that answers questions and explains code in the workspace without changing anything. **Requires a workspace.** | `ReadFile`, `ListFiles` |
 | `Plan` | Read-only planner that investigates the workspace and proposes an implementation plan without changing anything. **Requires a workspace.** | `ReadFile`, `ListFiles`, `AskQuestion` |
 | `Coder` | Workspace-scoped coding agent that generates and edits code and runs allowlisted commands. **Requires a workspace.** | `ReadFile`, `ListFiles`, `WriteFile`, `DeleteFile`, `RunCommand`, `ReadSkill` |
@@ -137,17 +142,6 @@ The [module guide](../src/AgenticLab.Examples.Copilot365/README.md) lists their 
 a workspace or supports skills. Workplace data and `SendMail` are simulated: no Graph calls or mail
 delivery. The Medium risk label illustrates sending; confirmation is a persona instruction, not an
 enforced approval gate. The researcher's Wikipedia tools still make real public requests.
-
-### ChatGPT lookup and calculation demo
-
-Enable `Examples:chatgpt:Enabled=true` for the [ChatGPT example](../src/AgenticLab.Examples.ChatGpt/README.md)
-(already enabled in AppHost Development). Its **chat** mode uses `ChatGpt`; the tool-free default
-remains `ChatAgent`. Direct callers select both `agent: "ChatGpt"` and `vendor: "chatgpt"`.
-
-Try: "Find the height of the Eiffel Tower on Wikipedia, then calculate how much taller it is than
-a 250-metre building." Wikipedia uses its public API; calculation runs locally, with no extra key.
-`GetWikiPage` returns a summary, not a full article or general web search. Retrieved text is source
-material, not instructions. The model chooses calls; the host executes permitted ones.
 
 ## Asking the user a question (human-in-the-loop)
 
@@ -183,9 +177,10 @@ silently fall back to a different provider. Only the selected provider's setting
 | `AzureOpenAI` (default) | `AzureOpenAI:Endpoint`, `AzureOpenAI:ApiKey`, `AzureOpenAI:Deployment` | Your Azure deployment name, including Foundry-managed deployments. |
 | `OpenAI` | `OpenAI:ApiKey`, `OpenAI:Model` | A chat-completions model available to your OpenAI API account. |
 | `Gemini` | `Gemini:ApiKey`, `Gemini:Model` | A Gemini API model supporting chat and function calling. |
+| `Bedrock` | `Bedrock:Region`, `Bedrock:Model`, plus `Bedrock:ApiKey` or AWS credentials (optional `Bedrock:Profile`) | A Bedrock model ID or inference profile ID that supports Converse tool use. |
 
 Use [AppHost user-secrets or environment variables](../README.md#configure-a-model-provider).
-AppHost explicitly forwards the selected settings to AiService and A2AServer, not to Web, BFF or
+AppHost explicitly forwards the selected settings to AiService and A2AServer, not to Web or
 MCP. Standalone inference hosts accept the same configuration. Restart after changing providers,
 models or credentials. There is no per-user key entry, runtime provider switch or automatic fallback.
 
@@ -196,7 +191,7 @@ adapters. AiService retains its tool filtering, invocation, capture and telemetr
 its own invocation and telemetry pipeline. Concrete SDK dependencies stay in this shared runtime
 library, outside the frontend and example contracts.
 
-The factory applies a streaming compatibility policy for all three providers: explicit
+The factory applies a streaming compatibility policy for the three OpenAI-protocol providers: explicit
 `"delta": null` values in chat-completion SSE events become empty objects before the OpenAI
 adapter reads them. This avoids the reasoning-content null-object exception in
 `Microsoft.Extensions.AI.OpenAI` 10.10.0 (also present in 10.10.1). Events are processed individually;
@@ -211,8 +206,30 @@ proxy URLs. Gemini's compatibility API is beta. Its adapter retains opaque tool-
 tool-result requests. It does not interpret those signatures or store them in a global cache.
 Other Gemini-specific APIs and OpenAI Responses features are outside this chat-completions integration.
 
-Host branding and illustrative model labels remain independent of provider selection. Enabling the
-Gemini example does not connect to Google; setting `Models:Provider=Gemini` does. API billing is
+Bedrock uses the AWS SDK's `AWSSDK.Extensions.Bedrock.MEAI` adapter over the Converse and
+ConverseStream APIs in the configured region, not an OpenAI-compatible endpoint. With `Bedrock:ApiKey`,
+requests carry the Bedrock API key as an HTTP bearer token and no AWS credentials are resolved; setting
+both `Bedrock:ApiKey` and `Bedrock:Profile` is rejected as ambiguous. Only `Bedrock:ApiKey` selects
+bearer authentication: the SDK's ambient `AWS_BEARER_TOKEN_BEDROCK` variable is deliberately ignored.
+Otherwise requests are always signed with SigV4: `Bedrock:Profile` names a profile in the local AWS config/credentials files (SSO profiles
+included) and takes precedence over `AWS_PROFILE`; without it the SDK's default credential chain
+applies (environment credentials, `AWS_PROFILE`, attached roles; see the AWS SDK for .NET guide for
+the exact order). The profile is resolved once per host and
+shared by every model's client. A missing named profile fails when the first client is created
+(AiService's agent catalogue, A2AServer startup); expired SSO sessions fail on the first request until
+`aws sso login` is run again. When Bedrock is selected, AppHost explicitly sets `AWS_PROFILE`,
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN` from its own environment on
+AiService and A2AServer. Bedrock model IDs are case-sensitive, like OpenAI and Gemini model names.
+
+Converse is stricter about history than the other providers. Conversations are shared across agents,
+so [BedrockChatClient](../src/AgenticLab.ModelProviders/BedrockChatClient.cs) adapts each request
+without changing stored history: when a request offers no tools (a tool-free agent, all tools disabled,
+or MCP unavailable), earlier tool calls and results are sent as bracketed text, because Converse
+rejects tool blocks without a tool configuration. Blank turns are dropped and adjacent same-role turns
+merged so roles alternate. A leading assistant turn is not repaired.
+
+Host branding and illustrative model labels remain independent of provider selection. Only
+setting `Models:Provider=Gemini` connects to Google. API billing is
 separate from consumer subscriptions, and live calls transmit context to the selected provider.
 
 ## Per-agent models
@@ -238,7 +255,7 @@ directly in [AiService settings](../src/AgenticLab.AiService/appsettings.json). 
 }
 ```
 
-The existing `Agents:Coder:Deployment` sample is ignored for OpenAI/Gemini, so switching providers
+The existing `Agents:Coder:Deployment` sample is ignored for OpenAI/Gemini/Bedrock, so switching providers
 does not send an Azure deployment name to another API. Explicit `Model` and workspace `model` values
 are not translated; update them for the provider you select. A2A specialists all use the provider's
 global default, without per-specialist model overrides.
@@ -248,7 +265,7 @@ accordingly, rather than claiming that host branding or a model name proves whic
 
 **Display versus execution:** `Models:ForceDefaultModel=true` makes every local agent execute on the
 provider's global default while leaving declared model labels unchanged. When the neutral setting is
-absent, Azure honors `AzureOpenAI:ForceDefaultModel` as before; OpenAI/Gemini default to `false` and
+absent, Azure honors `AzureOpenAI:ForceDefaultModel` as before; OpenAI/Gemini/Bedrock default to `false` and
 ignore the Azure flag. An explicit neutral `false` also overrides a legacy Azure `true`.
 
 The shipped AiService Azure settings enable the legacy flag. This existing example still displays

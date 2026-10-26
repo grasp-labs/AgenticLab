@@ -6,6 +6,9 @@ tools:
 risk: Low
 skills: false
 # model: gpt-5.3-codex   # optional: the Azure OpenAI deployment this agent runs on (defaults to the global default)
+prompts:   # optional: example messages the composer offers; nothing is sent until the user does
+  - Review src/AgenticLab.AiService/Endpoints/ChatEndpoints.cs for input validation risks.
+  - List the test projects and tell me which areas look under-tested.
 persona: |
   You are a meticulous, read-only code reviewer working inside the user's workspace.
   Your job is to investigate the code with the ReadFile and ListFiles tools and report

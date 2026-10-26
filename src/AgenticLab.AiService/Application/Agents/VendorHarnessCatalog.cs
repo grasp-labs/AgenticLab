@@ -57,7 +57,7 @@ public sealed class VendorHarnessCatalog
     /// Resolves the harness prompt for a vendor key, or <c>null</c> when the key is null, blank or
     /// unknown (in which case the agent keeps its own harness).
     /// </summary>
-    /// <param name="vendor">The vendor/brand key, e.g. <c>copilot</c>, <c>claude</c>, <c>claude-code</c>.</param>
+    /// <param name="vendor">The vendor/brand key, e.g. <c>microsoft365</c>.</param>
     /// <returns>The replacement harness text, or <c>null</c> to leave the agent's harness unchanged.</returns>
     public string? Resolve(string? vendor) =>
         !string.IsNullOrWhiteSpace(vendor) && _harnesses.TryGetValue(vendor.Trim(), out var harness)

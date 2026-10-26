@@ -14,7 +14,7 @@ for the three panes and replay behavior.
 
 Images here were captured locally on 2026-09-22 using public Wikipedia data and real calculator
 calls. They retain the former **Agentic AI** branding; the product is **Agentic Lab**. Gray masks
-cover deployment identifiers. The ChatGPT-labelled host is an Azure OpenAI-backed demo, not the
+cover deployment identifiers. The ChatGPT-labelled host (from an example removed in this fork) is an Azure OpenAI-backed demo, not the
 ChatGPT product. Select an image for full size.
 
 ## Chat execution breakpoints

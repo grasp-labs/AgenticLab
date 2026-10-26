@@ -7,9 +7,8 @@ RUN dotnet restore AgenticLab.slnx
 FROM build AS publish-web
 RUN dotnet publish src/AgenticLab.Web/AgenticLab.Web.csproj \
     --configuration Release \
-    --runtime linux-x64 \
-    --self-contained false \
     --output /out \
+    --no-restore \
     /p:UseAppHost=false
 
 FROM build AS publish-aiservice

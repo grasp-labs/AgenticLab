@@ -38,6 +38,8 @@ public abstract class AgentDefinitionBase : IAgentDefinition
     /// <inheritdoc />
     public virtual IReadOnlyList<string> Guardrails => Array.Empty<string>();
     /// <inheritdoc />
+    public virtual IReadOnlyList<string> SuggestedPrompts => Array.Empty<string>();
+    /// <inheritdoc />
     public abstract IList<AITool> Tools { get; }
     /// <inheritdoc />
     public string Instructions => InstructionsWith(null);

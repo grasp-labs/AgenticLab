@@ -10,9 +10,9 @@ Report suspected vulnerabilities privately as described in [SECURITY.md](SECURIT
 - Install the .NET 10 SDK and Git. See [Run Locally](README.md#run-locally) for application setup.
 - For the full application, use Aspire CLI **13.5.4**, matching the pinned AppHost SDK. The
   SDK-paired CLI through `dnx` is the fallback when a compatible CLI is not on `PATH`.
-- Install Node.js **24 LTS** only for the optional React frontend. Docker is only needed when
+- Docker is only needed when
   validating container builds, not for the standard local setup or .NET tests.
-- Credentials for the selected Azure OpenAI, OpenAI or Gemini provider are needed for live model
+- Credentials for the selected Azure OpenAI, OpenAI, Gemini or Bedrock provider are needed for live model
   runs, not for building or deterministic tests. Keep them in AppHost user-secrets or server-side
   environment variables; never add them to source or frontend assets.
   Live runs can incur charges and transmit context. Read the [security policy](SECURITY.md).
@@ -65,27 +65,12 @@ streaming tools, Gemini signature retention, model overrides and cancellation. L
 requires separately authorized checks with synthetic input; passing mocks does not establish it.
 Do not start AppHost or supply production secrets to reproduce CI. Ordinary .NET builds do not run npm.
 
-For React or BFF changes, also run:
-
-```sh
-dotnet test tests/AgenticLab.Bff.Tests/AgenticLab.Bff.Tests.csproj
-npm --prefix src/AgenticLab.React ci
-npm --prefix src/AgenticLab.React run lint
-npm --prefix src/AgenticLab.React run typecheck
-npm --prefix src/AgenticLab.React test
-npm --prefix src/AgenticLab.React run build
-```
-
-Follow the [React browser verification](docs/react-frontend.md#verification) for the Chromium
-installation and `test:e2e` commands; these use a loopback fixture, not Azure. For Blazor UI changes,
-use the [browser smoke guide](tools/README.md) and its Development/backend prerequisites. Its
+For Blazor UI changes, use the [browser smoke guide](tools/README.md) and its Development/backend prerequisites. Its
 separate load-test profile can make billable model calls and is not a pull-request check.
 
 The [CI workflow](.github/workflows/ci.yml) runs solution restore, Release build, and tests on every
-pull request and main-branch push. Its stable check is `dotnet-build-test`. Existing
-[React verification](.github/workflows/react-frontend.yml) and
-[container validation/publishing](.github/workflows/images.yml) remain separate. Container publishing
-runs on main pushes; React has path filters, so it must not be an unconditional required PR check.
+pull request and main-branch push. Its stable check is `dotnet-build-test`.
+[Container validation/publishing](.github/workflows/images.yml) remains separate and runs on main pushes.
 
 ## Maintainer Publication Checklist
 
@@ -105,7 +90,7 @@ separate from exposing running services. Keep audit reports private and outside 
 - [ ] Confirm contributor/employer/customer publication rights, [LICENSE](LICENSE), [NOTICE](NOTICE),
   asset licenses/provenance, trademark use, and source/API attribution obligations. Include disabled
   modules: their assets may still be distributed. A scanner cannot provide this approval.
-- [ ] Validate a clean-clone credential-free build/test, existing React/container checks, workflow
+- [ ] Validate a clean-clone credential-free build/test, existing container checks, workflow
   syntax, issue forms, policy links, and rendered documentation. Repeat the secret scan on the final
   candidate. Record unverified surfaces; do not treat missing evidence as a passing gate.
 - [ ] Obtain owner approval before changing repository visibility. Enable available secret scanning,
@@ -120,7 +105,7 @@ separate from exposing running services. Keep audit reports private and outside 
   another eligible reviewer is available. Do not require checks that skip via workflow path filters.
 - [ ] Enable Issues, squash merging, and deletion of merged branches. Leave Wiki/Discussions off
   unless they will be maintained. Set an educational description and relevant .NET, Aspire, agent,
-  Azure OpenAI, MCP, A2A, Blazor, and React topics. Verify public docs/forms and the first public CI.
+  Azure OpenAI, MCP, A2A, and Blazor topics. Verify public docs/forms and the first public CI.
 - [ ] Decide GHCR package visibility separately; main pushes already publish images. Obtain separate
   approval before publishing/changing package access or creating an initial release such as `v0.1.0`
   from the verified commit. State the educational/local-only scope, support policy, prerequisites,

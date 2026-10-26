@@ -55,7 +55,7 @@ The captured activity shows what the application sends and receives, not the mod
 reasoning. Illustrations of model internals are labelled simulations.
 
 Built with [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0),
-[Aspire](https://aspire.dev/) and your choice of Azure OpenAI, OpenAI or Gemini. Read the [vision](VISION.md) for more on the project's
+[Aspire](https://aspire.dev/) and your choice of Azure OpenAI, OpenAI, Gemini or Amazon Bedrock. Read the [vision](VISION.md) for more on the project's
 purpose and direction.
 
 [![Completed Wikipedia-and-calculator conversation beside the user, agent host, tools, and model diagram.](docs/images/01-live-workspace.png)](docs/images/01-live-workspace.png)
@@ -64,12 +64,12 @@ Follow a conversation alongside its agent and tools. [Workspace guide](docs/web-
 
 Screenshots captured locally on 2026-09-22 from a running Blazor build. The live run uses public
 Wikipedia data and real calculator calls. Gray masks cover deployment identifiers. The
-ChatGPT-labelled host is a representative demo backed by Azure OpenAI, not a connection to the
+ChatGPT-labelled host (from an example removed in this fork) is a representative demo backed by Azure OpenAI, not a connection to the
 ChatGPT product. Select an image to open it at full size.
 
 ## Security, Data, and Costs
 
-AiService, the React BFF, and the sample MCP/A2A services do not provide caller authentication or
+AiService and the sample MCP/A2A services do not provide caller authentication or
 per-user authorization. Chat endpoints can invoke tools; control and workspace endpoints also need
 protection. The terminal allowlist and workspace working directory are **not a sandbox**: processes
 run with the service account's permissions and can access files and networks outside that directory.
@@ -82,8 +82,7 @@ trust boundaries and private vulnerability-reporting channel.
 - Flow captures include model/tool payloads and can contain private data. Backend conversation
    history and frontend captures have separate lifetimes. Reset does not erase external copies,
    exported logs, screenshots, browser workspace preferences, or tool side effects. See
-   [conversation memory](docs/agents.md), [Blazor replay retention](docs/execution-explorer.md#replay-retention),
-   and [React state](docs/react-frontend.md#transport-and-state).
+   [conversation memory](docs/agents.md) and [Blazor replay retention](docs/execution-explorer.md#replay-retention).
 - OpenTelemetry collects logs, traces, and metrics for the configured collector. Review their
    contents, access, and retention before using sensitive data; aggregate metrics without content
    do not guarantee that every log or trace is free of sensitive information.
@@ -102,8 +101,9 @@ For the full local application:
   as a fallback when a compatible CLI is not on `PATH`.
 - One model provider with a chat model that supports tool calling: an
    [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/) deployment (including Foundry),
-   an [OpenAI API key](https://platform.openai.com/api-keys), or a
-   [Gemini API key](https://aistudio.google.com/apikey).
+   an [OpenAI API key](https://platform.openai.com/api-keys), a
+   [Gemini API key](https://aistudio.google.com/apikey), or
+   [Amazon Bedrock](https://aws.amazon.com/bedrock/) access through a Bedrock API key or AWS credentials.
 - Git to clone the repository, or download and extract its source archive.
 
 Docker is not required for the default local setup. The [learning-only option](#learning-only)
@@ -122,9 +122,18 @@ Run the following commands from the repository root.
 
 ### Configure a Model Provider
 
-Choose one provider and store its settings in the AppHost's local user-secrets store. Both AiService
-and A2AServer use that provider; restart the application after changing it. Keys stay in server-side
-configuration, not browser settings. Never commit credentials.
+Choose one provider and put its settings in a repository-root `.env` file. AppHost reads every key;
+Docker Compose passes only the provider and `AWS_*` keys listed in `docker-compose.yml`. Start from the template; `.env` is git- and Docker-ignored:
+
+```sh
+cp .env.example .env
+```
+
+Keys use environment-variable form (`Bedrock__ApiKey` for `Bedrock:ApiKey`); blank values are ignored.
+`.env` overrides AppHost appsettings and user-secrets, while real environment variables and
+command-line arguments still override `.env`. The `dotnet user-secrets` commands below remain an
+alternative. Both AiService and A2AServer use the selected provider; restart the application after
+changing it. Keys stay in server-side configuration, not browser settings. Never commit credentials.
 
 #### Configure Azure OpenAI
 
@@ -163,13 +172,39 @@ Get the key from [Google AI Studio](https://aistudio.google.com/apikey). Gemini 
 [OpenAI-compatible chat API](https://ai.google.dev/gemini-api/docs/openai), including streaming and
 tool calls. This compatibility API is beta; provider-specific features outside chat are not exposed.
 
-OpenAI and Gemini need no Azure credentials or deployment. Choose a model available to your API
-account that supports chat completions and function calling. Selecting a ChatGPT or Gemini **host**
-in the UI only changes the example prompt; it does not select this backend or require its matching
-example to be enabled.
+#### Amazon Bedrock
 
-Environment variables work too: use `Models__Provider`, `OpenAI__ApiKey` / `OpenAI__Model`, or
-`Gemini__ApiKey` / `Gemini__Model`. Aspire explicitly forwards only the selected connection settings
+Bedrock uses its native [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html).
+Authenticate with either a [Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html)
+or AWS credentials, not both:
+
+```sh
+dotnet user-secrets set "Models:Provider" "Bedrock" --project src/AgenticLab.AppHost
+dotnet user-secrets set "Bedrock:Region" "<aws-region, e.g. eu-north-1>" --project src/AgenticLab.AppHost
+dotnet user-secrets set "Bedrock:Model" "<model-or-inference-profile-id>" --project src/AgenticLab.AppHost
+# Either: a Bedrock API key, sent as a bearer token instead of AWS signing.
+dotnet user-secrets set "Bedrock:ApiKey" "<your-bedrock-api-key>" --project src/AgenticLab.AppHost
+# Or: a named profile from ~/.aws, including SSO profiles (run `aws sso login --profile <name>` first).
+dotnet user-secrets set "Bedrock:Profile" "<aws-profile-name>" --project src/AgenticLab.AppHost
+```
+
+Create the API key in the Bedrock console for the same region. Store it as `Bedrock:ApiKey`; the
+`AWS_BEARER_TOKEN_BEDROCK` variable from AWS's own examples is ignored by this app. Prefer a short-term key; long-term keys
+are tied to an IAM user and should be scoped to Bedrock and rotated.
+
+Copy the model ID or cross-region inference profile ID (for example one starting with `eu.`) from the
+Bedrock console, and make sure the model is enabled for your account in that region. Choose a model
+that supports tool use in the Converse API. Without `Bedrock:ApiKey`, `Bedrock:Profile` takes precedence
+over `AWS_PROFILE`. Without either, the AWS SDK's [default credential chain](https://docs.aws.amazon.com/sdk-for-net/v4/developer-guide/creds-assign.html)
+applies, which includes `AWS_PROFILE`, `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` /
+`AWS_SESSION_TOKEN` and attached IAM roles; set only one kind to avoid ambiguity. The identity needs `bedrock:InvokeModel` and
+`bedrock:InvokeModelWithResponseStream` for the model.
+
+OpenAI, Gemini and Bedrock need no Azure credentials or deployment. Choose a model available to your
+account that supports chat and function (tool) calling.
+
+Environment variables work too: use `Models__Provider`, `OpenAI__ApiKey` / `OpenAI__Model`,
+`Gemini__ApiKey` / `Gemini__Model`, or `Bedrock__Region` / `Bedrock__Model` with `Bedrock__ApiKey` or `Bedrock__Profile`. Aspire explicitly forwards only the selected connection settings
 to the inference services. Live requests send context to that provider and may incur its charges.
 See [model configuration](docs/agents.md#model-providers) for model overrides and validation rules.
 
@@ -194,24 +229,24 @@ it and its dependencies, then starts the application. No separate build command 
 Open the Aspire dashboard URL printed in the terminal, then open the **web** resource's endpoint.
 The dashboard also provides service logs and traces.
 
-Development startup enables **Default**, **ChatGPT**, **GitHub Copilot** and **Copilot 365**.
-Start with a conversation in Default, or select **ChatGPT / chat** and try:
+Development startup enables **Default** and **Copilot 365**.
+Start with a conversation in Default, or select **Copilot 365 / chat** and try:
 
-> Find the height of the Eiffel Tower on Wikipedia, then calculate how much taller it is
-> than a 250-metre building.
+> What is blocking the Q3 launch?
 
 Watch the model and tool activity, inspect the captured data, or use Manual mode to advance one
-step at a time. The vendor-labelled experiences are representative demos backed by your configured
-model API, not connections to those vendors' consumer products.
+step at a time. Copilot 365 is a representative demo over synthetic data, backed by your configured
+model API, not a connection to Microsoft 365 or the Microsoft 365 Copilot product.
 
-For a coding example, use [sample-workspace](sample-workspace/README.md) with the **GitHub Copilot**
+For a coding example, use [sample-workspace](sample-workspace/README.md) with the **Default**
 host and **Coder**. Its short guide shows how to select the folder in Settings and try its sample content.
 
 ### Run With Docker
 
 [docker-compose.yml](docker-compose.yml) builds the four service targets in [Dockerfile](Dockerfile).
-Set the selected provider's environment variables in the same terminal as Compose; AppHost
-user-secrets are not loaded into containers. For example, in PowerShell:
+Compose reads the same repository-root `.env` as AppHost, so `docker compose up --build -d` works
+once it is filled in. AppHost user-secrets are not loaded into containers; shell environment
+variables override `.env`. For example, in PowerShell without a `.env`:
 
 ```powershell
 $env:Models__Provider = "AzureOpenAI"
@@ -221,7 +256,10 @@ $env:AzureOpenAI__ApiKey = Read-Host "Azure OpenAI API key" -MaskInput
 docker compose up --build -d
 ```
 
-For OpenAI or Gemini, use the matching provider and environment variables described above.
+For OpenAI, Gemini or Bedrock, use the matching provider and environment variables described above.
+For Bedrock in containers, export `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and, for temporary
+credentials, `AWS_SESSION_TOKEN` (or set `Bedrock__ApiKey`), plus `Bedrock__Region` and `Bedrock__Model`. Compose does not mount
+`~/.aws`, so `Bedrock__Profile` and SSO profiles do not work there.
 Enter keys locally, never in chat or committed files. Inference services require valid provider
 configuration; this full-stack command is not a credential-free learning mode.
 
@@ -229,7 +267,8 @@ Open <http://localhost:8080>. Published ports are bound to localhost: Web 8080, 
 A2A 8082 and AiService 8083. Internal service discovery uses HTTP port 8080 through
 `services__aiservice__http__0`, `services__mcpserver__http__0` and `services__a2aserver__http__0`;
 `ASPNETCORE_HTTP_PORTS` alone does not configure outgoing connections. Compose uses Production
-settings (Default host only), without the Aspire dashboard.
+settings with Default and Copilot 365 (set `Examples__copilot365__Enabled=false` in `.env` to hide it),
+without the Aspire dashboard.
 
 After changing only Compose settings, run `docker compose up -d` from the credential-configured
 terminal; rebuilding is unnecessary. Check `docker compose ps -a` and `docker compose logs --tail 100`.
@@ -239,6 +278,28 @@ Discovery to retry once the services are ready. Stop with `docker compose down`.
 Web's data-protection keys are not persisted across container replacement. Clear this site's
 cookies or use a private window if an old antiforgery cookie cannot be decrypted. This warning is
 separate from service connection errors; the local sample does not disable antiforgery protection.
+
+### Sign In With Microsoft Entra ID
+
+Web can require a Microsoft Entra ID sign-in so only accounts in your tenant can open it. Register
+an app in your tenant and add **Web** redirect URIs for each address you use: `/signin-oidc` and
+`/signout-callback-oidc` on `http://localhost:5140` (Aspire) and/or `http://localhost:8080` (Docker).
+Create a client secret, then add to `.env`:
+
+```
+AzureAd__TenantId=<directory-tenant-id>
+AzureAd__ClientId=<application-client-id>
+AzureAd__ClientSecret=<client-secret>
+```
+
+With `AzureAd__ClientId` set, every Web page requires sign-in (authorization-code flow with PKCE,
+single tenant only) and the header shows the user with **Sign out**; without it Web stays open as
+before. Any account your tenant accepts can sign in, including B2B guests; to limit it to specific
+people, turn on **Assignment required** on the Enterprise application and assign users or groups.
+Open the app as `localhost` (not `127.0.0.1`, which would not match the redirect URI), in Chrome, Edge
+or Firefox: sign-in over plain `http://localhost` needs browsers that treat localhost as secure. AppHost passes these settings
+only to Web. AiService, MCP and A2A still have no authentication: keep them unreachable from other
+machines (Aspire and Compose bind them to localhost).
 
 ### Learning Only
 
@@ -254,17 +315,13 @@ the AI service; live chat requires the full setup above.
 ### Self-Contained Examples
 
 Optional examples are registered as independent projects, keeping their domain code, UI, assets,
-tests and documentation together. See the [example catalogue and contributor guide](docs/examples.md)
-and the [Windfarm project](src/AgenticLab.Examples.Windfarm/README.md) for an end-to-end process demo,
-or [Copilot 365](src/AgenticLab.Examples.Copilot365/README.md) for workplace chat, research and analysis
-over synthetic Microsoft 365 data.
-Every non-default host is an opt-in example, including **ChatGPT**, **Gemini**, **GitHub Copilot**,
-**Claude Code**, **Claude**, **Copilot 365** and **Windfarm**. Each owns its host-specific prompts,
-branding and tests. The shared learning guide remains available independently of enabled examples.
-Use `Examples:<id>:Enabled=true` with IDs `chatgpt`, `gemini`, `copilot`, `claude-code`, `claude`,
-`copilot365` or `windfarm`; flags can be combined. AppHost's Development settings enable `chatgpt`,
-`copilot` and `copilot365`; use `--Examples:<id>:Enabled=false` to disable one. Other environments
-start with only Default unless examples are explicitly enabled.
+tests and documentation together. This fork keeps one example,
+[Copilot 365](src/AgenticLab.Examples.Copilot365/README.md): workplace chat, research and analysis
+over synthetic Microsoft 365 data. See the [example contributor guide](docs/examples.md) to add more.
+The example owns its host-specific prompts, branding and tests. The shared learning guide remains
+available independently of enabled examples. Enable it with `Examples:copilot365:Enabled=true`.
+AppHost's Development settings enable it; use `--Examples:copilot365:Enabled=false` to disable it.
+Other environments start with only Default unless the example is explicitly enabled.
 
 For example, enable the workplace Copilot host and its three agents:
 
@@ -283,39 +340,16 @@ dotnet run --project src/AgenticLab.AppHost -- --Examples:copilot365:Enabled=tru
 | [Learning](docs/learning.md) | Guided lessons and the contextual Learn panel. |
 | [Workspace Features](docs/workspace.md) | Workspace agents, skills, custom instructions, and file/terminal tools. |
 | [Protocols](docs/protocols.md) | MCP tools, A2A agents, discovery, and protocol integration tests. |
-| [React Frontend Example](docs/react-frontend.md) | Adding an alternative frontend on top of the existing AI service. |
 | [Example Modules](docs/examples.md) | Self-contained community examples, extension contracts and registration. |
 | [Architecture and Conventions](AGENTS.md) | Project structure and implementation guidance for contributors. |
 | [Browser Checks](tools/README.md) | Responsive UI smoke checks and separate browser load-test setup. |
 | [Security Policy](SECURITY.md) | Private vulnerability reporting, tool risks, credentials, and data boundaries. |
 | [Contributing](CONTRIBUTING.md) | Development workflow, checks, pull requests, and maintainer publication gates. |
 
-## Alternative Frontend Example (React)
-
-Blazor is the main frontend. The optional React example shows how to add an alternative frontend
-on top of the existing AI service, reusing its APIs through a backend-for-frontend. It runs alongside
-Blazor and is not required for the main application.
-
-To try it, install Node.js **24 LTS** and configure a model provider as described above, then run:
-
-```sh
-npm --prefix src/AgenticLab.React ci
-aspire run -- --ReactFrontend:Enabled=true
-```
-
-Or use the .NET CLI after installing the same frontend dependencies:
-
-```sh
-dotnet run --project src/AgenticLab.AppHost -- --ReactFrontend:Enabled=true
-```
-
-Open the **react** resource's endpoint in the Aspire dashboard. The **web** resource still opens
-Blazor. See the [React setup guide](docs/react-frontend.md#run-with-aspire) for customization and builds.
-
 ## Contributing
 
 Contributions can improve code, tests, documentation, lessons, or examples. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) for setup, credential-free .NET tests, React/browser checks,
+[CONTRIBUTING.md](CONTRIBUTING.md) for setup, credential-free .NET tests, browser checks,
 and pull-request expectations. Discuss substantial changes in an issue first and keep changes focused.
 
 Never include credentials, private workspace content, or sensitive captures in issues or pull requests.
@@ -326,6 +360,5 @@ Report suspected vulnerabilities privately through the [security policy](SECURIT
 Originally conceived and created by [o-viken](https://github.com/o-viken). Code and documentation
 are licensed under the [Apache License 2.0](LICENSE), except where otherwise noted.
 See [NOTICE](NOTICE) for project attribution. Third-party assets retain their own licenses,
-including the [Web icons](src/AgenticLab.Web/wwwroot/icons/lucide/LICENSE) and
-[React assets](src/AgenticLab.React/public/licenses/). Published container images include the
+including the [Web icons](src/AgenticLab.Web/wwwroot/icons/lucide/LICENSE). Published container images include the
 project license and attribution at `/app/LICENSE` and `/app/NOTICE`.

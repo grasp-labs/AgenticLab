@@ -2,13 +2,11 @@ using AgenticLab.ModelProviders;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Extensions.AI;
 using AgenticLab.Extensibility.Examples;
-using AgenticLab.Examples.Windfarm;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // OpenTelemetry, health checks, service discovery and resilience.
 builder.AddServiceDefaults();
-builder.Services.AddExample<WindfarmExample>(builder.Configuration, ExampleHost.A2A);
 
 var connection = new ModelConnectionOptions(builder.Configuration);
 IChatClient chatClient = new ModelClientFactory(connection).Create()

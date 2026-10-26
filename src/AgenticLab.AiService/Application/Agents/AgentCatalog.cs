@@ -66,7 +66,9 @@ public sealed class AgentCatalog
             d.RiskLevel.ToString(),
             d.Guardrails,
             deployments[d.Name],
-            Array.Empty<ToolMapping>())).ToList();
+            Array.Empty<ToolMapping>(),
+            Provider: clients.ProviderName,
+            SuggestedPrompts: d.SuggestedPrompts)).ToList();
     }
 
     /// <summary>The name of the agent used when a request does not specify one.</summary>

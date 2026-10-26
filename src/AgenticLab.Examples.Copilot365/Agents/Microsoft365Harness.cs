@@ -28,7 +28,7 @@ public sealed class Microsoft365Harness : IVendorHarness
     public string DisplayName => "Copilot 365";
 
     /// <inheritdoc />
-    public string ModelLabel => "GPT-4o (Microsoft)";
+    public string ModelLabel => string.Empty;
 
     /// <inheritdoc />
     public IReadOnlyList<VendorMode> Modes { get; } = new[]

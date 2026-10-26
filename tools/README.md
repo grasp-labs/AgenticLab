@@ -15,7 +15,7 @@ node /tmp/agentic-lab-loadtest/node_modules/playwright/cli.js install chromium
 ```
 
 Start the application first, for example with `dotnet run --project src/AgenticLab.AppHost`, and set
-`AGENTICLAB_URL` to its externally reachable **web** resource, not the React frontend. The example port
+`AGENTICLAB_URL` to its externally reachable **web** resource. The example port
 below is illustrative; use the actual URL. Only the `AGENTICLAB_*` variable names are supported.
 
 ## UI smoke
@@ -33,21 +33,10 @@ node tools/web-smoke.mjs
 ```
 
 AppHost's normal Development configuration uses
-`AGENTICLAB_HOSTS=default,chatgpt,copilot,microsoft365`. For a Default-only profile, restart with
-`--Examples:chatgpt:Enabled=false --Examples:copilot:Enabled=false --Examples:copilot365:Enabled=false`
-and use `AGENTICLAB_HOSTS=default`. For the full branded-host profile, enable the host examples:
-
-```sh
-dotnet run --project src/AgenticLab.AppHost -- \
-	--Examples:chatgpt:Enabled=true --Examples:gemini:Enabled=true \
-	--Examples:copilot:Enabled=true --Examples:claude-code:Enabled=true \
-	--Examples:claude:Enabled=true --Examples:copilot365:Enabled=true
-```
-
-Against that Web URL, set `AGENTICLAB_HOSTS` to
-`default,chatgpt,gemini,copilot,claude-code,claude,microsoft365`. This optional comma-separated list
-asserts the exact available order; the script otherwise checks the returned choices generically.
-Set `AGENTICLAB_HOST_ALIASES='{"ChatGpt":"chatgpt","ClaudeCode":"claude-code","Microsoft365":"microsoft365"}'`
+`AGENTICLAB_HOSTS=default,microsoft365`. For a Default-only profile, restart with
+`--Examples:copilot365:Enabled=false` and use `AGENTICLAB_HOSTS=default`. This optional
+comma-separated list asserts the exact available order; the script otherwise checks the returned
+choices generically. Set `AGENTICLAB_HOST_ALIASES='{"Microsoft365":"microsoft365"}'`
 to check legacy host values too; use `"default"` for each expected value in the disabled profile.
 The smoke check restores selections in isolated contexts without resetting server conversations,
 checks canonical keys case-insensitively and verifies an unavailable saved host falls back to Default.

@@ -13,6 +13,9 @@ guardrails:
   - Commands restricted to an allowlist; shell operators rejected
   - 60s command timeout
   - Files only — cannot touch directories outside the workspace
+prompts:
+  - Scaffold a tiny Python CLI called `notes` with a README that explains how to run it.
+  - Create a minimal pytest example under tests/ that demonstrates a fixture.
 persona: |
   You are Scaffolder, a hands-on workspace agent that bootstraps small, self-contained
   demos and project skeletons. You can read, list, and write files and run allowlisted

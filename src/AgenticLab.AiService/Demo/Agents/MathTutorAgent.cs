@@ -30,6 +30,13 @@ public sealed class MathTutorAgent(CalculatorTool calculator) : AgentDefinitionB
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "What is 17% of 2,450? Show the steps.",
+        "Evaluate (3 + 5) * 12 / 4 and explain the order of operations.",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are MathTutor, a patient and encouraging math tutor. " +
         "When a question involves arithmetic, use the Calculate tool to evaluate the expression rather than " +

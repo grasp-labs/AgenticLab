@@ -1,7 +1,7 @@
 # Agentic Lab
 
 A .NET 10 [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/) sample: AI agents backed by
-Azure OpenAI, OpenAI or Gemini, each with its own persona and toolset, answering questions using
+Azure OpenAI, OpenAI, Gemini or Amazon Bedrock, each with its own persona and toolset, answering questions using
 Wikipedia and a calculator as tools.
 
 See [README.md](README.md) for a user-facing overview, prerequisites, local setup and contribution steps.
@@ -11,7 +11,7 @@ The [agents guide](docs/agents.md#chat-api) covers the `POST /chat` / `GET /agen
 
 ## Architecture
 
-Service hosts, reusable .NET libraries and optional example modules plus a React frontend, orchestrated by Aspire
+Service hosts, reusable .NET libraries and an optional Copilot 365 example module, orchestrated by Aspire
 (solution: [AgenticLab.slnx](AgenticLab.slnx)):
 
 | Project | Role |
@@ -19,18 +19,10 @@ Service hosts, reusable .NET libraries and optional example modules plus a React
 | [src/AgenticLab.AppHost](src/AgenticLab.AppHost/AppHost.cs) | Aspire orchestrator. Wires up resources, injects the selected model provider's config, sets service references. |
 | [src/AgenticLab.AiService](src/AgenticLab.AiService/Program.cs) | ASP.NET Core minimal-API service exposing `POST /chat`, `POST /chat/stream`, `POST /chat/control`, `POST /chat/reset`, `GET /agents`, `POST /skills` and `POST /harness`. Hosts the agent catalog. |
 | [src/AgenticLab.Web](src/AgenticLab.Web/Program.cs) | Blazor Server app that visualizes the live data flow (User → Application/Harness → Tools → LLM) by consuming the `/chat/stream` Server-Sent Events. |
-| [src/AgenticLab.React](src/AgenticLab.React/README.md) | Optional React/TypeScript CSR example: conversation, live flow and real execution controls. Presentation is separate from its API client and run-state hook. |
-| [src/AgenticLab.Bff](src/AgenticLab.Bff/Program.cs) | Optional ASP.NET Core BFF for React. Allowlisted YARP `/api` forwarding with service discovery; serves built frontend assets without SSR or model credentials. |
 | [src/AgenticLab.ServiceDefaults](src/AgenticLab.ServiceDefaults/Extensions.cs) | Shared OpenTelemetry, health checks, resilience, and service discovery. Referenced by every service. |
-| [src/AgenticLab.ModelProviders](src/AgenticLab.ModelProviders/ModelClientFactory.cs) | Shared model configuration and raw Azure/OpenAI/Gemini clients for AiService and A2AServer. No Flow state or frontend dependencies. |
+| [src/AgenticLab.ModelProviders](src/AgenticLab.ModelProviders/ModelClientFactory.cs) | Shared model configuration and raw Azure/OpenAI/Gemini/Bedrock clients for AiService and A2AServer. No Flow state or frontend dependencies. |
 | [src/AgenticLab.Extensibility](src/AgenticLab.Extensibility/Examples/ExampleModule.cs) | Shared agent/harness contracts, explicit role-based example registration, runtime/panel contracts and reusable stateless controls. No domain workflow state. |
-| [src/AgenticLab.Examples.ChatGpt](src/AgenticLab.Examples.ChatGpt/README.md) | Optional ChatGPT host, dedicated agent consuming shared Wikipedia/calculator tools, branding and tests. |
-| [src/AgenticLab.Examples.Copilot](src/AgenticLab.Examples.Copilot/README.md) | Optional GitHub Copilot host prompt and branding over shared Ask/Plan/Coder agents. |
-| [src/AgenticLab.Examples.ClaudeCode](src/AgenticLab.Examples.ClaudeCode/README.md) | Optional Claude Code host prompt and branding over shared Plan/Coder agents. |
-| [src/AgenticLab.Examples.Claude](src/AgenticLab.Examples.Claude/README.md) | Optional Claude host prompt and branding over the shared tool-free chat agent. |
-| [src/AgenticLab.Examples.Gemini](src/AgenticLab.Examples.Gemini/README.md) | Optional Gemini host prompt and branding over the shared tool-free chat agent. |
 | [src/AgenticLab.Examples.Copilot365](src/AgenticLab.Examples.Copilot365/README.md) | Optional workplace Copilot example: three agents, host prompt, simulated Microsoft 365 tools/data, resource/risk metadata and tests. No custom panel or protocol service. |
-| [src/AgenticLab.Examples.Windfarm](src/AgenticLab.Examples.Windfarm/README.md) | Optional self-contained example RCL. All domain content, API/protocol adapters, UI, assets, docs and tests stay here; existing hosts load its role contributions. |
 | [src/AgenticLab.McpServer](src/AgenticLab.McpServer/Program.cs) | Minimal Model Context Protocol (MCP) server exposing a `GetCurrentTime` tool over HTTP. Consumed by the AiService over MCP. |
 | [src/AgenticLab.A2AServer](src/AgenticLab.A2AServer/Program.cs) | Minimal Agent2Agent (A2A) server hosting **config-declared persona-only agents** (a Research agent and a Poet by default) over the A2A protocol (Microsoft Agent Framework's `AddAIAgent` + `MapA2AJsonRpc`), plus a `GET /agents` discovery endpoint. Called by the AiService's `Orchestrator` agent over A2A. |
 
@@ -43,7 +35,7 @@ Key flow: Web → `POST /chat` or `POST /chat/stream` (with an optional agent na
 
 The Blazor Web app mirrors the split. Its flow page cascades two page-scoped state roots from [src/AgenticLab.Web/Flow](src/AgenticLab.Web/Flow): `FlowViewState` (the user's selections, exposing feature collaborators under `Flow/ViewState/` — `Layout`, `Concepts`, `Options`, `WorkspacePrefs`, `Diagram`, `Cursor`, `Roster`, `Agent`, `Harness`) and `FlowRunController` (the live run lifecycle, exposing `Projections`, `Replay`, `Focus`, `Status` and `Catalogs` under `Flow/Run/`). Components read them as `View.Layout.X` / `Run.Replay.Y`; the pure builders (`PromptSignatureBuilder`, `InferenceBuilder`, `EmbeddingBuilder`, `NetworkSimulation`, `ExecutionReplayBuilder`, `A2AFlowBuilder`) stay static and unit-testable. Each Razor component owns its scoped `.razor.css`; a component whose `@code` grows past a screen moves it into a `.razor.cs` code-behind.
 
-Blazor's [design system](docs/design-system.md) takes its visual language from React without a React
+Blazor's [design system](docs/design-system.md) needs no JavaScript framework
 runtime or npm build dependency. [design-system.css](src/AgenticLab.Web/wwwroot/design-system.css)
 owns `--lab-*` tokens and locally served IBM Plex fonts; shared Razor controls under
 [Extensibility/Components](src/AgenticLab.Extensibility/Components) and Web's
@@ -111,12 +103,6 @@ collapsing the host.
 captures. `ConfigurationVersion` and per-fetch generations prevent asynchronous catalogue/prompt
 responses from publishing data for old selections. See [docs/web-flow-page.md](docs/web-flow-page.md).
 
-React is an opt-in example, not a Blazor replacement. `ReactFrontend:Enabled=true` adds the `react`
-Vite resource and `react-bff`, which forwards five existing AiService routes. In development Vite
-proxies same-origin `/api` calls; the built BFF hosts static assets. `src/api` owns wire contracts and
-SSE parsing, `src/flow` owns the reducer/hook, and components/CSS modules/theme tokens own presentation.
-No npm task runs during normal .NET restore/build. See [docs/react-frontend.md](docs/react-frontend.md).
-
 ## Example Modules
 
 Examples use the shared contracts in [Extensibility](src/AgenticLab.Extensibility) and are explicitly
@@ -157,14 +143,13 @@ registration/listing: AiService discovers protocols before listening. Do not int
 `WaitFor` dependencies. Nested module test projects must be excluded from the production RCL's
 default items. Module-specific launch and verification steps belong in its README.
 
-Base configuration enables only Default. AppHost's Development settings additionally enable `chatgpt`,
-`copilot` and `copilot365`; `Examples:<id>:Enabled=false` overrides these defaults. Other environments
-remain Default-only unless configured otherwise. The additional host module IDs are
-`chatgpt`, `gemini`, `copilot`, `claude-code`, `claude`, `copilot365` and `windfarm`; use
-`Examples:<id>:Enabled=true` to opt in. AiService and Web explicitly register the participating
-modules. Harness-only manifests declare no owned agents: `SharedAgentNames` supplies the existing
-ChatAgent/Ask/Plan/Coder identities, registered once in core. ChatGPT alone adds its dedicated
-`ChatGpt` agent, consuming the existing `IHostToolSource` rather than concrete host tools.
+Base configuration enables only Default. AppHost's Development settings additionally enable
+`copilot365`; `Examples:copilot365:Enabled=false` overrides this default. Other environments
+remain Default-only unless configured otherwise (docker-compose.yml enables `copilot365` by default);
+use `Examples:copilot365:Enabled=true` to opt in.
+AiService and Web explicitly register the participating modules. Harness-only manifests declare no
+owned agents: `SharedAgentNames` supplies the existing ChatAgent/Ask/Plan/Coder identities,
+registered once in core.
 
 `ExampleManifest.HostPresentation` owns local SVG paths, ordering, product concept links and legacy
 host selection aliases. Registration rejects unowned presentation keys and ambiguous aliases;
@@ -182,7 +167,6 @@ The detailed design notes live under [docs/](docs) — read the page for the are
 | [docs/agents.md](docs/agents.md) | Chat API, conversation memory and retention, the layered harness + persona prompt, per-vendor harnesses, the agent table, human-in-the-loop questions, per-run tool toggles, per-agent models / `ForceDefaultModel`. |
 | [docs/web-flow-page.md](docs/web-flow-page.md) | The live flow visualization: page shell and panels, perspectives, diagram toggles, conversation surface, captured LLM payloads, prompt signature, the simulated inference / embeddings / network panels, backend-gated stepping, environment & risk view. |
 | [docs/design-system.md](docs/design-system.md) | Blazor tokens, shared components, local assets, accessibility, responsive patterns and the development-only catalogue. |
-| [docs/react-frontend.md](docs/react-frontend.md) | Optional CSR React prototype, BFF routes, startup/build/test commands, scope and frontend customization. |
 | [docs/examples.md](docs/examples.md) | Reusable module interfaces, per-host registration, ownership rules, UI lifecycle and community example catalogue. |
 | [docs/execution-explorer.md](docs/execution-explorer.md) | The Execution dock (replay of a captured run, bounded archives, resource baseline), chat execution breakpoints and streaming/control API. |
 | [docs/learning.md](docs/learning.md) | The in-app Learn panel (concept content) and the standalone guided `/learn` journey. |
@@ -210,24 +194,20 @@ The detailed design notes live under [docs/](docs) — read the page for the are
 - [CI](.github/workflows/ci.yml) runs solution restore, Release build, and matching no-build tests on
   every PR and main push, without Azure credentials or starting AppHost. Keep its `dotnet-build-test`
   check unconditional. Reproduce the commands in [CONTRIBUTING.md](CONTRIBUTING.md#verification).
-  Existing React and container workflows remain separate; the path-filtered React workflow must not
-  be an unconditional required PR check.
+  The container image workflow remains separate.
 - The Web app (`web` resource) starts automatically and is exposed on an external HTTP endpoint; open it from the Aspire dashboard to use the flow visualizer.
 - Blazor UI smoke: install temporary Playwright as described in [tools/README.md](tools/README.md), then
   `AGENTICLAB_URL=<web-url> NODE_PATH=/tmp/agentic-lab-loadtest/node_modules node tools/web-smoke.mjs`.
   Use a Development Web instance with an available agent catalogue. This does not send chat or run
   discovery; `/design-system` is also available there for isolated component inspection.
-- Optional React (Node 24 LTS): `npm --prefix src/AgenticLab.React ci`, then
-  `dotnet run --project src/AgenticLab.AppHost -- --ReactFrontend:Enabled=true`. Open `react` in Aspire.
-- React checks: `npm --prefix src/AgenticLab.React test` and `npm --prefix src/AgenticLab.React run build`;
-  BFF checks: `dotnet test tests/AgenticLab.Bff.Tests/AgenticLab.Bff.Tests.csproj`. Browser commands are in
-  [docs/react-frontend.md](docs/react-frontend.md#verification).
 
 ## Configuration
 
-Select one backend at startup with `Models:Provider=AzureOpenAI|OpenAI|Gemini`; absence preserves
-Azure OpenAI. Settings come from **AppHost user-secrets** or environment variables. AppHost explicitly
-forwards only the selected connection settings to AiService and A2AServer, never to Web/BFF/MCP.
+Select one backend at startup with `Models:Provider=AzureOpenAI|OpenAI|Gemini|Bedrock`; absence preserves
+Azure OpenAI. Settings come from the git-ignored repository-root **`.env`** (template `.env.example`,
+read by AppHost's `DotEnvFile` and by Docker Compose), **AppHost user-secrets** or environment variables.
+`.env` overrides appsettings/user-secrets; real environment variables and command-line arguments override `.env`. AppHost explicitly
+forwards only the selected connection settings to AiService and A2AServer, never to Web/MCP.
 Standalone inference hosts accept the same schema. Existing Azure configuration remains valid:
 
 ```
@@ -237,7 +217,9 @@ dotnet user-secrets set "AzureOpenAI:ApiKey" "<key>" --project src/AgenticLab.Ap
 ```
 
 OpenAI requires `OpenAI:ApiKey` and `OpenAI:Model`; Gemini requires `Gemini:ApiKey` and
-`Gemini:Model`, without any Azure settings. Use `__` instead of `:` for environment variables.
+`Gemini:Model`, without any Azure settings. Bedrock requires `Bedrock:Region` and `Bedrock:Model`
+and either `Bedrock:ApiKey` (bearer token) or AWS credentials (optional `Bedrock:Profile`, otherwise the
+SDK default chain), never both; AppHost forwards standard `AWS_*` credential variables only when Bedrock is selected. Use `__` instead of `:` for environment variables.
 See [README.md](README.md#configure-a-model-provider) for key setup and billing caveats. Provider
 selection is independent of host branding, requires a restart and has no runtime fallback.
 
@@ -245,7 +227,16 @@ selection is independent of host branding, requires a restart and has no runtime
 `ModelClientFactory` owns raw SDK construction; each inference host keeps its own wrapper pipeline.
 Keep SDK dependencies out of Extensibility and ServiceDefaults. Gemini's provider-local adapter
 preserves opaque tool continuation metadata with conversation content, scoped to one response while
-streaming; do not replace this with a global signature cache. Never commit secrets.
+streaming; do not replace this with a global signature cache. Bedrock's provider-local
+`BedrockChatClient` adapts shared history per request (tool blocks as text when no tools are offered,
+blank turns dropped, same-role turns merged) without mutating stored history. Never commit secrets.
+
+Web's optional Entra ID sign-in lives in [EntraSignIn.cs](src/AgenticLab.Web/EntraSignIn.cs): enabled only when
+`AzureAd:ClientId` is set (then `AzureAd:TenantId` must be a tenant GUID and `AzureAd:ClientSecret` is required),
+it uses `Microsoft.Identity.Web` with the authorization-code flow (no token acquisition or token cache), sets an
+authenticated-user fallback policy, always registers authentication services (the middleware always runs), keeps health endpoints anonymous
+and maps `/signout`. AppHost forwards the `AzureAd` section to Web only. `AppHeader` reads the cascading
+authentication state instead of `AuthorizeView`, so it also renders where no auth services are registered.
 
 In-memory conversation retention is configured in the AiService settings. `InactiveTtl` is a sliding
 window refreshed whenever a conversation is used; `CleanupInterval` controls the expiry scan:
@@ -265,8 +256,7 @@ overrides to AiService; A2A specialists use the global default. See
 
 ## Conventions
 
-- Product name: **Agentic Lab**; project/namespace prefix: `AgenticLab`; React package:
-  `agentic-lab-react`. Use `https://github.com/o-viken/agenticlab` for project repository links,
+- Product name: **Agentic Lab**; project/namespace prefix: `AgenticLab`. Use `https://github.com/o-viken/agenticlab` for project repository links,
   `agenticlab-*` for container image names and browser preference keys, and `AGENTICLAB_*` for
   browser-tool environment variables. This is a clean rename: do not add legacy product-name
   fallbacks or migrate old browser preferences. Preserve the AppHost `UserSecretsId`.
@@ -289,7 +279,7 @@ overrides to AiService; A2A specialists use the global default. See
   new primitives; follow [docs/design-system.md](docs/design-system.md). Native ARIA boolean attributes
   must render explicit `"true"`/`"false"` strings, not minimised Razor boolean attributes.
 - Agent capabilities are plain methods annotated with `[Description]` (on the method and each parameter) and exposed via `AIFunctionFactory.Create(...)` in each tool's `AsTools()` (see `WikiTool`, `CalculatorTool`, `FileSystemTool`, `TerminalTool`). Tools live under [src/AgenticLab.AiService/Application/Tools](src/AgenticLab.AiService/Application/Tools) (harness/app tools, used by the workspace agents) and [src/AgenticLab.AiService/Demo/Tools](src/AgenticLab.AiService/Demo/Tools) (demo tools); add new ones there the same way. Resolve file-tool paths via the active `WorkspaceScope.ResolvePath` and take the terminal working directory from that scope. These lexical path checks and the command allowlist are not a filesystem/process sandbox; preserve the trust-boundary guidance in [SECURITY.md](SECURITY.md).
-- Add a new agent by inheriting `AgentDefinitionBase` and supplying its name, description, `Persona` (its own system prompt, layered on top of the shared harness prompt), and tool subset under `src/AgenticLab.AiService/Demo/Agents/`, then registering it as a singleton `IAgentDefinition` in [Program.cs](src/AgenticLab.AiService/Program.cs). Declare the name as a `public const string AgentName` and return it from `Name`, so vendor harnesses and other call sites reference the constant instead of repeating the string. Override `RequiresWorkspace => true` when the agent's tools need a workspace root (the endpoints then insist on a `Workspace` path and open a `WorkspaceScope` for the run). Override `SupportsSkills => true` to opt into workspace skills (the endpoints then inject the `<skills>` catalogue per run; see [workspace skills](docs/workspace.md#workspace-skills-the-coder-agent)). Override `RiskLevel` (an `AgentRiskLevel`) and `Guardrails` (an `IReadOnlyList<string>` of human-readable safety mechanisms) to communicate how risky the agent is and what constrains it — both default to `None` / empty in `AgentDefinitionBase`, are surfaced over `GET /agents`, and drive the Environment & risk view's risk meter and guardrails chips. Override `ModelId` (a `string?`, default `null`) to declare a preferred model or Azure deployment in code, though configured agent model overrides take precedence (see [per-agent models](docs/agents.md#per-agent-models)). Alternatively, ship an agent **in a workspace** as an `agents/<name>.agent.yaml` file (no code, no redeploy) — it can only use existing backend tools and is discovered + run per request; see [workspace-defined agents](docs/workspace.md#workspace-defined-agents-the-agents-folder).
+- Add a new agent by inheriting `AgentDefinitionBase` and supplying its name, description, `Persona` (its own system prompt, layered on top of the shared harness prompt), and tool subset under `src/AgenticLab.AiService/Demo/Agents/`, then registering it as a singleton `IAgentDefinition` in [Program.cs](src/AgenticLab.AiService/Program.cs). Declare the name as a `public const string AgentName` and return it from `Name`, so vendor harnesses and other call sites reference the constant instead of repeating the string. Override `RequiresWorkspace => true` when the agent's tools need a workspace root (the endpoints then insist on a `Workspace` path and open a `WorkspaceScope` for the run). Override `SupportsSkills => true` to opt into workspace skills (the endpoints then inject the `<skills>` catalogue per run; see [workspace skills](docs/workspace.md#workspace-skills-the-coder-agent)). Override `RiskLevel` (an `AgentRiskLevel`) and `Guardrails` (an `IReadOnlyList<string>` of human-readable safety mechanisms) to communicate how risky the agent is and what constrains it — both default to `None` / empty in `AgentDefinitionBase`, are surfaced over `GET /agents`, and drive the Environment & risk view's risk meter and guardrails chips. Override `SuggestedPrompts` (an `IReadOnlyList<string>`, default empty) with two or three short example messages that exercise the agent's tools; `GET /agents` returns them as `suggestedPrompts`, Blazor's empty conversation offers them as composer pre-fills, and they are never sent to the model or auto-submitted. Override `ModelId` (a `string?`, default `null`) to declare a preferred model or Azure deployment in code, though configured agent model overrides take precedence (see [per-agent models](docs/agents.md#per-agent-models)). Alternatively, ship an agent **in a workspace** as an `agents/<name>.agent.yaml` file (no code, no redeploy) — it can only use existing backend tools and is discovered + run per request; see [workspace-defined agents](docs/workspace.md#workspace-defined-agents-the-agents-folder).
 - Services reach each other by Aspire resource name (e.g. `https+http://aiservice`) through service discovery, not hardcoded URLs.
 - Agents are stateless; the shared `IChatClient` and the `AgentCatalog` are registered as singletons. Per-conversation history lives outside the agents in the singleton `ConversationStore` (keyed by `ConversationId`), not on the agents themselves, and expires after the configured sliding inactivity window.
 

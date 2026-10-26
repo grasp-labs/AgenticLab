@@ -3,15 +3,8 @@
     <Project Path="src/AgenticLab.A2AServer/AgenticLab.A2AServer.csproj" />
     <Project Path="src/AgenticLab.AiService/AgenticLab.AiService.csproj" />
     <Project Path="src/AgenticLab.AppHost/AgenticLab.AppHost.csproj" />
-    <Project Path="src/AgenticLab.Bff/AgenticLab.Bff.csproj" />
     <Project Path="src/AgenticLab.Extensibility/AgenticLab.Extensibility.csproj" />
-    <Project Path="src/AgenticLab.Examples.ChatGpt/AgenticLab.Examples.ChatGpt.csproj" />
-    <Project Path="src/AgenticLab.Examples.Copilot/AgenticLab.Examples.Copilot.csproj" />
-    <Project Path="src/AgenticLab.Examples.Claude/AgenticLab.Examples.Claude.csproj" />
-    <Project Path="src/AgenticLab.Examples.ClaudeCode/AgenticLab.Examples.ClaudeCode.csproj" />
-    <Project Path="src/AgenticLab.Examples.Gemini/AgenticLab.Examples.Gemini.csproj" />
     <Project Path="src/AgenticLab.Examples.Copilot365/AgenticLab.Examples.Copilot365.csproj" />
-    <Project Path="src/AgenticLab.Examples.Windfarm/AgenticLab.Examples.Windfarm.csproj" />
     <Project Path="src/AgenticLab.McpServer/AgenticLab.McpServer.csproj" />
     <Project Path="src/AgenticLab.ModelProviders/AgenticLab.ModelProviders.csproj" />
     <Project Path="src/AgenticLab.ServiceDefaults/AgenticLab.ServiceDefaults.csproj" />
@@ -22,14 +15,7 @@
     <Project Path="src/AgenticLab.Examples.Copilot365/Tests/AgenticLab.Examples.Copilot365.Tests.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="src/AgenticLab.Examples.ChatGpt/Tests/AgenticLab.Examples.ChatGpt.Tests.csproj" />
-    <Project Path="src/AgenticLab.Examples.Claude/Tests/AgenticLab.Examples.Claude.Tests.csproj" />
-    <Project Path="src/AgenticLab.Examples.ClaudeCode/Tests/AgenticLab.Examples.ClaudeCode.Tests.csproj" />
-    <Project Path="src/AgenticLab.Examples.Copilot/Tests/AgenticLab.Examples.Copilot.Tests.csproj" />
-    <Project Path="src/AgenticLab.Examples.Gemini/Tests/AgenticLab.Examples.Gemini.Tests.csproj" />
-    <Project Path="src/AgenticLab.Examples.Windfarm/Tests/AgenticLab.Examples.Windfarm.Tests.csproj" />
     <Project Path="tests/AgenticLab.AiService.Tests/AgenticLab.AiService.Tests.csproj" />
-    <Project Path="tests/AgenticLab.Bff.Tests/AgenticLab.Bff.Tests.csproj" />
     <Project Path="tests/AgenticLab.Web.Tests/AgenticLab.Web.Tests.csproj" />
   </Folder>
 </Solution>

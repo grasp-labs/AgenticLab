@@ -30,6 +30,14 @@ public sealed class ChatClientProvider
             ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
     }
 
+    /// <summary>The selected inference provider's display name, shown next to model identifiers.</summary>
+    public string ProviderName => _connection.Provider switch
+    {
+        ModelProvider.AzureOpenAI => "Azure OpenAI",
+        ModelProvider.Bedrock => "Amazon Bedrock",
+        var provider => provider.ToString(),
+    };
+
     /// <summary>The default model identifier, or Azure deployment name, retained under its original API name.</summary>
     public string DefaultDeployment => _connection.DefaultModel;
 

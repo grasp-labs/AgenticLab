@@ -40,6 +40,13 @@ public sealed class Microsoft365Agent(Microsoft365Tool m365) : AgentDefinitionBa
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "What is the status of the Q3 launch? Check my email and calendar.",
+        "Summarize the FY26 budget workbook and who sent me the latest forecast.",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are Microsoft 365 Copilot, a helpful assistant for work. " +
         "You answer questions about the user's working day by grounding your replies in their organization's " +

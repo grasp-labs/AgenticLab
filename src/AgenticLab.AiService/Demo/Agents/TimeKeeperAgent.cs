@@ -32,6 +32,13 @@ public sealed class TimeKeeperAgent(McpToolProvider mcp) : AgentDefinitionBase
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "What time is it right now?",
+        "What is today's date, and which day of the week is it?",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are TimeKeeper, a precise assistant for date and time questions. " +
         "When asked about the current time or date, call the GetCurrentTime tool discovered from the MCP " +

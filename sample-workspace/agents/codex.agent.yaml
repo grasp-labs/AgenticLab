@@ -10,6 +10,9 @@ tools:
 risk: High
 skills: true
 model: gpt-5.3-codex   # shown in the UI as this agent's model (actual execution may be forced to the default deployment)
+prompts:
+  - Create notes/skills.md with a one-line summary of each skill in this workspace.
+  - Which skills are available here? Use the get-date skill to tell me today's date.
 persona: |
   You are Codex, a capable, workspace-scoped coding agent operating inside the user's
   workspace. You can read, create, edit, and delete files and run allowlisted commands

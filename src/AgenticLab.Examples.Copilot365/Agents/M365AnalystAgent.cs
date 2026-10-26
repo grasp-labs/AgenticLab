@@ -34,6 +34,12 @@ public sealed class M365AnalystAgent(Microsoft365Tool m365, IHostToolSource host
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "Read the FY26 budget and calculate how much 4% under plan is in dollars.",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are Analyst, a Microsoft 365 Copilot agent for quantitative analysis. " +
         "When asked to analyze numbers, first use SearchFiles to find the relevant workbook or document and " +

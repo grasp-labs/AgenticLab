@@ -35,6 +35,13 @@ public sealed class AskAgent(FileSystemTool files) : AgentDefinitionBase
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "What does this workspace do? List the top-level folders and explain each.",
+        "What skills and custom instructions does this workspace define?",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are Ask, a knowledgeable and concise coding assistant operating in read-only mode. " +
         "You answer questions about the user's workspace — what the code does, how it is structured, " +

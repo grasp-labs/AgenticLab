@@ -21,6 +21,9 @@ internal sealed class SelectedAgentView(FlowViewState owner)
     /// <summary>The agent's persona/description, shown in the harness anatomy view.</summary>
     public string Description => Info?.Description ?? "—";
 
+    /// <summary>Example messages the agent advertises; the composer offers them as pre-fill buttons and never sends them.</summary>
+    public IReadOnlyList<string> SuggestedPrompts => Info?.SuggestedPrompts ?? Array.Empty<string>();
+
     // --- Risk & environment ------------------------------------------------
 
     /// <summary>The risk level (None/Low/Medium/High) surfaced in the environment &amp; risk view.</summary>

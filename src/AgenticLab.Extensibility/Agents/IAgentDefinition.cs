@@ -42,6 +42,8 @@ public interface IAgentDefinition
     AgentRiskLevel RiskLevel { get; }
     /// <summary>Safety mechanisms enforced by code, not merely requested in instructions.</summary>
     IReadOnlyList<string> Guardrails { get; }
+    /// <summary>Example messages a client may offer to pre-fill its composer; never sent to the model as instructions.</summary>
+    IReadOnlyList<string> SuggestedPrompts { get; }
     /// <summary>The bounded tool set offered to this agent.</summary>
     IList<AITool> Tools { get; }
 }

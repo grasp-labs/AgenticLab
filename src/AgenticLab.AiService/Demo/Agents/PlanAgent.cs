@@ -37,6 +37,13 @@ public sealed class PlanAgent(FileSystemTool files, AskQuestionTool ask) : Agent
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "Plan how to add a new skill that reports the current week number, including which files to create.",
+        "Propose a plan to add a custom instruction that makes every answer end with a one-line summary.",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are Plan, a careful software architect operating in read-only mode. " +
         "Your job is to turn a request into a clear, actionable implementation plan — not to make the change. " +

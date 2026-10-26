@@ -6,6 +6,11 @@
     <div class="header-actions">
         <span class="edition">@Context <span>Blazor</span></span>
         @ChildContent
+        @if (_userName is { } userName)
+        {
+            <span class="header-user" title="Signed in with Microsoft Entra ID">@userName</span>
+            <a class="header-link" href="@EntraSignIn.SignOutPath" data-enhance-nav="false">Sign out</a>
+        }
         <RepositoryLink />
     </div>
 </header>
@@ -17,4 +22,14 @@
     [Parameter, EditorRequired] public string Context { get; set; } = string.Empty;
     /// <summary>Page-specific links and actions, rendered inside the page's interactive boundary.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>The sign-in state when Entra sign-in is configured; absent or anonymous otherwise.</summary>
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private string? _userName;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+        _userName = user?.Identity?.IsAuthenticated == true ? user.Identity.Name ?? "Signed in" : null;
+    }
 }

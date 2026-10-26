@@ -24,7 +24,7 @@ public sealed class DefaultHarness : IVendorHarness
     /// <inheritdoc />
     public string DisplayName => "Default";
 
-    /// <summary>Empty so the LLM node shows the real Azure OpenAI deployment rather than a simulated label.</summary>
+    /// <summary>Empty so clients show the configured provider and model rather than a simulated label.</summary>
     public string ModelLabel => string.Empty;
 
     /// <inheritdoc />
@@ -34,5 +34,9 @@ public sealed class DefaultHarness : IVendorHarness
         new VendorMode(WikiAssistantAgent.AgentName, "wiki"),
         new VendorMode(TimeKeeperAgent.AgentName, "time"),
         new VendorMode(OrchestratorAgent.AgentName, "orchestrator"),
+        // Workspace modes; previously offered only by the removed coding-assistant example hosts.
+        new VendorMode(SharedAgentNames.Ask, "ask"),
+        new VendorMode(SharedAgentNames.Plan, "plan"),
+        new VendorMode(SharedAgentNames.Coder, "coder"),
     };
 }

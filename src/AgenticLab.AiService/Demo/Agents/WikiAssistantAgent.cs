@@ -30,6 +30,14 @@ public sealed class WikiAssistantAgent(WikiTool wiki) : AgentDefinitionBase
     ];
 
     /// <inheritdoc />
+    public override IReadOnlyList<string> SuggestedPrompts =>
+    [
+        "When was the Eiffel Tower completed? Check Wikipedia.",
+        "Who was Ada Lovelace and what is she known for?",
+        "Summarize the Wikipedia page on the Model Context Protocol.",
+    ];
+
+    /// <inheritdoc />
     protected override string Persona =>
         "You are WikiAssistant, a concise and friendly research helper. " +
         "When a question asks about facts, people, places, or concepts, use the SearchWiki tool to find " +
