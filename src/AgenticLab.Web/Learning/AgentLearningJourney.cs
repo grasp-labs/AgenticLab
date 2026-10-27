@@ -96,7 +96,7 @@ internal static class AgentLearningJourney
             "The model reasons and chooses. The agent host executes. Tool results inform the next decision; a final answer ends the turn.",
             "Available today", false,
             ["reasoning", "tools", "context"], ["loop-context", "loop-decision", "loop-execute", "loop-observe", "loop-answer"],
-            "Open live flow", "/"),
+            "Open live flow", "./"),
         new("agents-everywhere", "Same foundation, different setting",
             "Purpose, hosting and triggers are separate choices. Compare illustrative configurations while the foundation stays the same.",
             "Tools and permissions change with the environment. A local agent host does not mean a local model.",
@@ -126,7 +126,7 @@ internal static class AgentLearningJourney
             "Today + future integration", false,
             ["guardrails", "securing-agents"],
             ["lifecycle-run", "lifecycle-observe", "lifecycle-evaluate", "lifecycle-improve"],
-            "Open live flow", "/"),
+            "Open live flow", "./"),
     ]);
 
     internal static IReadOnlyList<LearningStage> Stages { get; } =
@@ -152,5 +152,5 @@ internal static class AgentLearningJourney
     internal static LearningStage Move(string? id, int offset) =>
         Stages[(int)Math.Clamp((long)IndexOf(id) + offset, 0, Stages.Count - 1)];
 
-    internal static string Href(string id) => $"/learn?stage={Uri.EscapeDataString(id)}";
+    internal static string Href(string id) => $"learn?stage={Uri.EscapeDataString(id)}";
 }

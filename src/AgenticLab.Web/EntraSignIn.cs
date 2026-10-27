@@ -16,6 +16,9 @@ internal static class EntraSignIn
     /// <summary>The local route that signs the user out of the app and Entra ID.</summary>
     public const string SignOutPath = "/signout";
 
+    /// <summary>The sign-out link relative to the page's base href, so it keeps any configured path base.</summary>
+    public const string SignOutHref = "signout";
+
     /// <summary>Whether sign-in is configured.</summary>
     public static bool IsEnabled(IConfiguration configuration) =>
         !string.IsNullOrWhiteSpace(configuration["AzureAd:ClientId"]);
@@ -59,7 +62,8 @@ internal static class EntraSignIn
     {
         if (IsEnabled(app.Configuration))
         {
-            app.MapGet(SignOutPath, () => Results.SignOut(new AuthenticationProperties { RedirectUri = "/" },
+            app.MapGet(SignOutPath, (HttpContext context) => Results.SignOut(
+                new AuthenticationProperties { RedirectUri = $"{context.Request.PathBase}/" },
                 [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]));
         }
         return app;

@@ -80,9 +80,9 @@ button:focus-visible, select:focus-visible { outline: var(--lab-focus-ring); out
 .core-pair > span:not(.core-connector) { display: flex; align-items: center; gap: .65rem; font-size: 20px; }
 .core-connector { color: var(--accent); font-size: 28px; }
 .story-icon { display: inline-block; width: 24px; height: 24px; flex: 0 0 24px; background: currentColor; mask: var(--icon) center / contain no-repeat; }
-.application-icon { --icon: url('/icons/lucide/workflow.svg'); color: var(--app); }
-.model-icon { --icon: url('/icons/lucide/cpu.svg'); color: var(--blue); }
-.user-icon { --icon: url('/icons/lucide/user-round.svg'); color: var(--accent); }
+.application-icon { --icon: url('icons/lucide/workflow.svg'); color: var(--app); }
+.model-icon { --icon: url('icons/lucide/cpu.svg'); color: var(--blue); }
+.user-icon { --icon: url('icons/lucide/user-round.svg'); color: var(--accent); }
 .responsibilities { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; margin: 1.25rem 0; }
 .responsibilities span { text-align: center; border-bottom: 2px solid var(--line); padding: .65rem .2rem; overflow-wrap: anywhere; }
 .foundation-cycle { margin-top: 1.5rem; }

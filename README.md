@@ -263,9 +263,10 @@ credentials, `AWS_SESSION_TOKEN` (or set `Bedrock__ApiKey`), plus `Bedrock__Regi
 Enter keys locally, never in chat or committed files. Inference services require valid provider
 configuration; this full-stack command is not a credential-free learning mode.
 
-Open <http://localhost:8080>. Published ports are bound to localhost: Web 8080, MCP 8081,
-A2A 8082 and AiService 8083. Internal service discovery uses HTTP port 8080 through
-`services__aiservice__http__0`, `services__mcpserver__http__0` and `services__a2aserver__http__0`;
+Open <http://localhost:8080>. Published ports are bound to localhost: Web 8080, MCP 8081 and
+AiService 8083. Compose does not run the A2A server, so the Orchestrator agent has no remote
+specialists there (use Aspire for A2A). Internal service discovery uses HTTP port 8080 through
+`services__aiservice__http__0` and `services__mcpserver__http__0`;
 `ASPNETCORE_HTTP_PORTS` alone does not configure outgoing connections. Compose uses Production
 settings with Default and Copilot 365 (set `Examples__copilot365__Enabled=false` in `.env` to hide it),
 without the Aspire dashboard.
@@ -300,6 +301,33 @@ Open the app as `localhost` (not `127.0.0.1`, which would not match the redirect
 or Firefox: sign-in over plain `http://localhost` needs browsers that treat localhost as secure. AppHost passes these settings
 only to Web. AiService, MCP and A2A still have no authentication: keep them unreachable from other
 machines (Aspire and Compose bind them to localhost).
+
+### Deploy Behind a Shared Host
+
+The images run behind a reverse proxy that serves several apps on one host, such as the Grasp
+sandbox Kubernetes cluster (`DsApplication` manifest `apps/sandbox/ds-agentic-lab` in
+`grasp-labs/ds-application-manifests`). Three settings support that:
+
+- `PathBase=/agentic-lab` serves Web under a URL prefix. Links, assets, cookies and the sign-in
+  redirect URI include it, whether or not the proxy strips the prefix before forwarding. Set
+  `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` when TLS ends at the proxy, so the redirect URI is `https`.
+- `ParameterStore__Path=/some/path` (Web and AiService) loads every AWS Systems Manager parameter
+  under that path at startup, decrypting SecureStrings and mapping `/` to `:`
+  (`/some/path/Bedrock/ApiKey` becomes `Bedrock:ApiKey`). Use it for secrets the platform cannot pass as
+  environment variables. AWS credentials and region come from the SDK default chain (`AWS_REGION`, node
+  or pod role), and a failed load stops startup.
+- `/alive` answers without sign-in in every environment, for load-balancer health checks. It reports
+  only the process self-check; `/health` remains Development-only.
+
+Register `https://<host><PathBase>/signin-oidc` and `/signout-callback-oidc` on the Entra app. Run one
+Web replica: Blazor Server circuits and data-protection keys are per pod, so users sign in again after
+a restart.
+
+[infra/](infra) holds the Terraform for the ECR repositories (`ds-agentic-lab-<component>`), and the
+[Makefile](Makefile) builds `linux/amd64` images and pushes them: run `make provision` once, then
+`make deploy`, which refuses uncommitted changes, tags images with the commit hash and `latest`, and
+prints the image references to pin in the manifest. The Dockerfile's SDK stage runs natively and
+publishes portable output, so the amd64 build is fast on arm64 machines.
 
 ### Learning Only
 

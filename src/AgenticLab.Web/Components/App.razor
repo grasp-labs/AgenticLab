@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
+    <base href="@($"{HttpContext?.Request.PathBase}/")" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["design-system.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
@@ -21,3 +21,8 @@
 </body>
 
 </html>
+
+@code {
+    // The path base (see PathBase.cs) makes relative links, assets and the Blazor circuit stay under the prefix.
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+}

@@ -4,8 +4,12 @@ using AgenticLab.Web.Components;
 using AgenticLab.Web.Flow;
 using AgenticLab.Extensibility.Examples;
 using AgenticLab.Examples.Copilot365;
+using AgenticLab.ParameterStore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Secrets from AWS Parameter Store when ParameterStore:Path is set (deployed hosts); read before any setting.
+builder.AddParameterStore();
 
 // OpenTelemetry, health checks, service discovery and resilience.
 builder.AddServiceDefaults();
@@ -41,6 +45,8 @@ builder.Services.AddHttpClient<AiServiceClient>(client => client.BaseAddress = n
 
 var app = builder.Build();
 
+// Optional URL prefix (PathBase) when served under a shared host behind a reverse proxy.
+app.UseConfiguredPathBase();
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.

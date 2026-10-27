@@ -48,6 +48,11 @@ Only select trusted workspaces. Agent definitions, skills, instructions, fetched
 results can influence model requests; instructions and tool descriptions are not a security boundary.
 Disable tools you do not need, and avoid running agents with access to valuable credentials or data.
 
+`WebFetch` connects only to public addresses: it refuses loopback, private, link-local (including the
+`169.254.169.254` cloud metadata endpoint), shared and multicast ranges, checked on every connection
+including redirects. File and terminal tools have no such boundary; on a shared deployment narrow
+`Coder:AllowedCommands` and treat the host's own files and credentials as reachable by signed-in users.
+
 File tools check normalized paths against the selected workspace root. These are lexical checks,
 not a symlink-resolving filesystem sandbox. Callers supply the root, so a workspace path is not a
 per-user permission boundary either.

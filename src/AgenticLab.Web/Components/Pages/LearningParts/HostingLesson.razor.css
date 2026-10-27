@@ -22,8 +22,8 @@ dt { font-weight: 600; }
 .hosting-map dt { display: flex; align-items: center; gap: .5rem; }
 dd { margin: .45rem 0 0; color: var(--muted); overflow-wrap: anywhere; }
 .host-icon { display: inline-block; width: 20px; height: 20px; flex: 0 0 20px; background: var(--muted); mask: var(--icon) center / contain no-repeat; }
-.runtime-icon { --icon: url('/icons/lucide/workflow.svg'); }
-.model-icon { --icon: url('/icons/lucide/cpu.svg'); }
+.runtime-icon { --icon: url('icons/lucide/workflow.svg'); }
+.model-icon { --icon: url('icons/lucide/cpu.svg'); }
 .decision-notes { margin: 1rem 0 0; }
 .decision-notes > div, .readiness-details > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 1rem; padding: .75rem 0; border-top: 1px solid var(--line); }
 .decision-notes dd, .readiness-details dd { margin: 0; }

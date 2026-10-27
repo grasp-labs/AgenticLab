@@ -115,13 +115,14 @@ public static class Extensions
         {
             // All health checks must pass for app to be considered ready to accept traffic after starting
             app.MapHealthChecks(HealthEndpointPath).AllowAnonymous();
-
-            // Only health checks tagged with the "live" tag must pass for app to be considered alive
-            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-            {
-                Predicate = r => r.Tags.Contains("live")
-            }).AllowAnonymous();
         }
+
+        // Only health checks tagged with the "live" tag must pass for app to be considered alive. Mapped in every
+        // environment, without sign-in, for load-balancer probes; it reports only the process self-check.
+        app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
+        {
+            Predicate = r => r.Tags.Contains("live")
+        }).AllowAnonymous();
 
         return app;
     }

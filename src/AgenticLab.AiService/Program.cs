@@ -2,8 +2,12 @@ using AgenticLab.AiService.Endpoints;
 using AgenticLab.AiService.Startup;
 using AgenticLab.Extensibility.Examples;
 using AgenticLab.Examples.Copilot365;
+using AgenticLab.ParameterStore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Secrets from AWS Parameter Store when ParameterStore:Path is set (deployed hosts); read before any setting.
+builder.AddParameterStore();
 
 // The /chat/stream SSE response can stay idle for a long time while the client pauses or
 // single-steps the flow, so disable Kestrel's minimum response data rate to avoid aborting it.

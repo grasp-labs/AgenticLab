@@ -37,7 +37,9 @@ internal static class ServiceRegistration
         {
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("AgenticLab-WebFetch/1.0 (https://github.com/o-viken/agenticlab)");
-        });
+        })
+        // Public addresses only, re-checked on every connection including redirects; no proxy, so the check sees the target.
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { ConnectCallback = WebFetchTool.ConnectToPublicAddressAsync, UseProxy = false });
         services.AddSingleton(sp =>
             new WebFetchTool(sp.GetRequiredService<IHttpClientFactory>().CreateClient("webfetch")));
 

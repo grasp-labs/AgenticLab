@@ -125,7 +125,7 @@
     height: 16px;
     flex: 0 0 16px;
     background: currentColor;
-    mask: url('/icons/lucide/sliders-horizontal.svg') center / contain no-repeat;
+    mask: url('icons/lucide/sliders-horizontal.svg') center / contain no-repeat;
 }
 
 .diagram .view-options-popover {
@@ -382,9 +382,9 @@
     mask: var(--icon) center / contain no-repeat;
 }
 
-.diagram ::deep .icon-user { --icon: url('/icons/lucide/user-round.svg'); }
-.diagram ::deep .icon-model { --icon: url('/icons/lucide/cpu.svg'); }
-.diagram ::deep .icon-harness { --icon: url('/icons/lucide/workflow.svg'); }
+.diagram ::deep .icon-user { --icon: url('icons/lucide/user-round.svg'); }
+.diagram ::deep .icon-model { --icon: url('icons/lucide/cpu.svg'); }
+.diagram ::deep .icon-harness { --icon: url('icons/lucide/workflow.svg'); }
 .diagram ::deep .node.active .diagram-icon { background: var(--accent); }
 
 .diagram ::deep .node .title {

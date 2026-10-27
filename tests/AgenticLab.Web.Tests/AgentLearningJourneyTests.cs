@@ -137,11 +137,11 @@ public sealed class AgentLearningJourneyTests
         {
             if (stage.ActionHref is not null)
             {
-                Assert.Equal("/", stage.ActionHref);
+                Assert.Equal("./", stage.ActionHref);
                 Assert.False(string.IsNullOrWhiteSpace(stage.ActionLabel));
             }
 
-            Assert.Equal($"/learn?stage={stage.Id}", AgentLearningJourney.Href(stage.Id));
+            Assert.Equal($"learn?stage={stage.Id}", AgentLearningJourney.Href(stage.Id));
         }
     }
 
@@ -167,7 +167,7 @@ public sealed class AgentLearningJourneyTests
 
         Assert.Equal(["loop-context", "loop-decision", "loop-execute", "loop-observe", "loop-answer"], stage.HighlightedNodes.ToArray());
         Assert.Equal(["reasoning", "tools", "context"], stage.ConceptIds.ToArray());
-        Assert.Equal("/", stage.ActionHref);
+        Assert.Equal("./", stage.ActionHref);
         Assert.False(stage.PlatformMap);
     }
 
@@ -176,7 +176,7 @@ public sealed class AgentLearningJourneyTests
     public void AgentStage_PreservesPermalinkWithConciseTitle()
     {
         Assert.Equal("Agent", AgentLearningJourney.Resolve("model-to-agent").Title);
-        Assert.Equal("/learn?stage=model-to-agent", AgentLearningJourney.Href(AgentLearningJourney.Resolve("model-to-agent").Id));
+        Assert.Equal("learn?stage=model-to-agent", AgentLearningJourney.Href(AgentLearningJourney.Resolve("model-to-agent").Id));
     }
 
     /// <summary>Navigation skips hidden content and numbers the final visible stage consecutively.</summary>
@@ -218,7 +218,7 @@ public sealed class AgentLearningJourneyTests
         Assert.Equal("where-to-run", AgentLearningJourney.Move("wider-ecosystem", 1).Id);
         Assert.Equal("wider-ecosystem", AgentLearningJourney.Move("where-to-run", -1).Id);
         Assert.Equal("run-and-improve", AgentLearningJourney.Move("where-to-run", 1).Id);
-        Assert.Equal("/learn?stage=where-to-run", AgentLearningJourney.Href(AgentLearningJourney.Resolve("WHERE-TO-RUN").Id));
+        Assert.Equal("learn?stage=where-to-run", AgentLearningJourney.Href(AgentLearningJourney.Resolve("WHERE-TO-RUN").Id));
         Assert.Null(AgentLearningJourney.Resolve("where-to-run").ActionHref);
     }
 
@@ -414,7 +414,7 @@ public sealed class AgentLearningJourneyTests
         Assert.Equal("anatomy-of-agent", AgentLearningJourney.Move("inside-the-harness", 1).Id);
         Assert.Equal("agent-loop", AgentLearningJourney.Move("anatomy-of-agent", 1).Id);
         Assert.Equal("anatomy-of-agent", AgentLearningJourney.Move("agent-loop", -1).Id);
-        Assert.Equal("/learn?stage=anatomy-of-agent", AgentLearningJourney.Href(AgentLearningJourney.Resolve("ANATOMY-OF-AGENT").Id));
+        Assert.Equal("learn?stage=anatomy-of-agent", AgentLearningJourney.Href(AgentLearningJourney.Resolve("ANATOMY-OF-AGENT").Id));
     }
 
     /// <summary>Example selection preserves reveals while chapter reentry restores the initial example.</summary>

@@ -308,9 +308,9 @@
     mask: var(--icon) center / contain no-repeat;
 }
 
-.icon-client { --icon: url('/icons/lucide/workflow.svg'); }
-.icon-tools { --icon: url('/icons/lucide/wrench.svg'); }
-.icon-peer { --icon: url('/icons/lucide/network.svg'); }
+.icon-client { --icon: url('icons/lucide/workflow.svg'); }
+.icon-tools { --icon: url('icons/lucide/wrench.svg'); }
+.icon-peer { --icon: url('icons/lucide/network.svg'); }
 
 .disc-node-title {
     font-weight: 500;

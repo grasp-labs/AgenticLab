@@ -9,7 +9,7 @@
         @if (_userName is { } userName)
         {
             <span class="header-user" title="Signed in with Microsoft Entra ID">@userName</span>
-            <a class="header-link" href="@EntraSignIn.SignOutPath" data-enhance-nav="false">Sign out</a>
+            <a class="header-link" href="@EntraSignIn.SignOutHref" data-enhance-nav="false">Sign out</a>
         }
         <RepositoryLink />
     </div>

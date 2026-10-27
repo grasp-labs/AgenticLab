@@ -91,8 +91,8 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .node-instructions.highlighted, .node-execution-controls.highlighted, .node-foundry-runtime.highlighted, .node-lifecycle-improve.highlighted { border-left-color: var(--app); }
 .node-available-tools.highlighted, .node-mcp-tools.highlighted, .node-foundry-tools.highlighted, .node-lifecycle-evaluate.highlighted { border-left-color: var(--agent); }
 .node-icon { display: block; width: 20px; height: 20px; background: var(--muted); mask: var(--icon) center / contain no-repeat; }
-.icon-harness { --icon: url('/icons/lucide/workflow.svg'); }
-.icon-model { --icon: url('/icons/lucide/cpu.svg'); }
+.icon-harness { --icon: url('icons/lucide/workflow.svg'); }
+.icon-model { --icon: url('icons/lucide/cpu.svg'); }
 figcaption { margin-top: .85rem; font-size: 12px; line-height: 1.5; color: var(--muted); }
 .execution-loop { display: grid; grid-template-columns: 28px minmax(0, 1fr) 36px minmax(80px, .65fr); max-width: 700px; margin: 0 auto; }
 .loop-input { grid-area: 1 / 2; }

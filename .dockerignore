@@ -21,3 +21,7 @@ deploy
 README.md
 VISION.md
 design
+
+# Terraform working files
+infra/.terraform/
+**/*.tfstate*

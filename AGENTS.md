@@ -19,7 +19,8 @@ Service hosts, reusable .NET libraries and an optional Copilot 365 example modul
 | [src/AgenticLab.AppHost](src/AgenticLab.AppHost/AppHost.cs) | Aspire orchestrator. Wires up resources, injects the selected model provider's config, sets service references. |
 | [src/AgenticLab.AiService](src/AgenticLab.AiService/Program.cs) | ASP.NET Core minimal-API service exposing `POST /chat`, `POST /chat/stream`, `POST /chat/control`, `POST /chat/reset`, `GET /agents`, `POST /skills` and `POST /harness`. Hosts the agent catalog. |
 | [src/AgenticLab.Web](src/AgenticLab.Web/Program.cs) | Blazor Server app that visualizes the live data flow (User → Application/Harness → Tools → LLM) by consuming the `/chat/stream` Server-Sent Events. |
-| [src/AgenticLab.ServiceDefaults](src/AgenticLab.ServiceDefaults/Extensions.cs) | Shared OpenTelemetry, health checks, resilience, and service discovery. Referenced by every service. |
+| [src/AgenticLab.ServiceDefaults](src/AgenticLab.ServiceDefaults/Extensions.cs) | Shared OpenTelemetry, health checks, resilience, and service discovery. Referenced by every service. `/alive` is mapped anonymously in every environment for load-balancer probes; `/health` stays Development-only. |
+| [src/AgenticLab.ParameterStore](src/AgenticLab.ParameterStore/ParameterStoreConfiguration.cs) | Optional AWS Systems Manager Parameter Store configuration source (`ParameterStore:Path`) for deployed Web and AiService hosts; keeps the AWS SDK out of ServiceDefaults. |
 | [src/AgenticLab.ModelProviders](src/AgenticLab.ModelProviders/ModelClientFactory.cs) | Shared model configuration and raw Azure/OpenAI/Gemini/Bedrock clients for AiService and A2AServer. No Flow state or frontend dependencies. |
 | [src/AgenticLab.Extensibility](src/AgenticLab.Extensibility/Examples/ExampleModule.cs) | Shared agent/harness contracts, explicit role-based example registration, runtime/panel contracts and reusable stateless controls. No domain workflow state. |
 | [src/AgenticLab.Examples.Copilot365](src/AgenticLab.Examples.Copilot365/README.md) | Optional workplace Copilot example: three agents, host prompt, simulated Microsoft 365 tools/data, resource/risk metadata and tests. No custom panel or protocol service. |
@@ -181,11 +182,14 @@ The detailed design notes live under [docs/](docs) — read the page for the are
 
 - Build: `dotnet build AgenticLab.slnx`
 - Run everything (launches the Aspire dashboard): `dotnet run --project src/AgenticLab.AppHost`
-- Docker: `docker compose up --build -d` builds the four Dockerfile service targets. Configure
+- Docker: `docker compose up --build -d` builds the three Dockerfile service targets (no A2A server). Configure
   provider environment variables in that shell; Compose does not load AppHost user-secrets.
-  Localhost ports 8080/8081/8082/8083 expose Web/MCP/A2A/AiService. Compose supplies explicit
+  Localhost ports 8080/8081/8083 expose Web/MCP/AiService. Compose supplies explicit
   `services__<name>__http__0` endpoints on internal port 8080, uses Production settings, and
   orders startup without readiness checks. See [README.md](README.md#run-with-docker).
+- Sandbox Kubernetes images: `make provision` (Terraform in [infra/](infra), ECR repositories
+  `ds-agentic-lab-<component>`) then `make deploy` (buildx `linux/amd64`, tagged with the commit hash and
+  `latest`). See [README.md](README.md#deploy-behind-a-shared-host).
 - AppHost pins Aspire 13.5.4 with `AspireUseCliBundle=true`: use the matching Aspire CLI on `PATH`; the SDK-paired CLI package through `dnx` is the fallback.
 - Test: `dotnet test AgenticLab.slnx`. AiService's `ModelProviderTests`, `FlowExecutionTests` and
   `ProtocolIntegrationTests` cover provider configuration/authentication, streaming tools, Gemini
@@ -235,7 +239,10 @@ Web's optional Entra ID sign-in lives in [EntraSignIn.cs](src/AgenticLab.Web/Ent
 `AzureAd:ClientId` is set (then `AzureAd:TenantId` must be a tenant GUID and `AzureAd:ClientSecret` is required),
 it uses `Microsoft.Identity.Web` with the authorization-code flow (no token acquisition or token cache), sets an
 authenticated-user fallback policy, always registers authentication services (the middleware always runs), keeps health endpoints anonymous
-and maps `/signout`. AppHost forwards the `AzureAd` section to Web only. `AppHeader` reads the cascading
+and maps `/signout`. AppHost forwards the `AzureAd` section to Web only. Web's optional [PathBase](src/AgenticLab.Web/PathBase.cs)
+(`PathBase=/prefix`) serves it under a URL prefix behind a proxy that may strip it; keep Web links relative to
+the `<base href>` (`learn`, `./`, `EntraSignIn.SignOutHref`), never root-relative. Deployed hosts load secrets
+with `ParameterStore:Path`; see [README.md](README.md#deploy-behind-a-shared-host). `AppHeader` reads the cascading
 authentication state instead of `AuthorizeView`, so it also renders where no auth services are registered.
 
 In-memory conversation retention is configured in the AiService settings. `InactiveTtl` is a sliding

@@ -5,6 +5,7 @@
     <ProjectReference Include="..\AgenticLab.ModelProviders\AgenticLab.ModelProviders.csproj" />
     <ProjectReference Include="..\AgenticLab.Extensibility\AgenticLab.Extensibility.csproj" />
     <ProjectReference Include="..\AgenticLab.Examples.Copilot365\AgenticLab.Examples.Copilot365.csproj" />
+    <ProjectReference Include="..\AgenticLab.ParameterStore\AgenticLab.ParameterStore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
